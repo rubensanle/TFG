@@ -1,0 +1,124 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Plantilla para trabajos fin de estudios (grado y master).
+%% Escuela Técnica Superior de Ingenieros Informáticos. UPM.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper,11pt]{book}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Configuración relacionada con normativa
+\usepackage[T1]{fontenc} % font encoding
+\usepackage[utf8]{inputenc} % input encoding
+\usepackage[english,spanish,es-lcroman]{babel} % idiomas (por defecto se activa el último)
+\usepackage[top=3.5cm,bottom=3.5cm,right=3cm,left=3cm]{geometry} % dimensiones de la hoja
+\usepackage{bookman} % tipo de letra del texto
+\usepackage[backend=biber,style=ieee]{biblatex} % bibliografía
+\addbibresource{secciones/biblio.bib} % fichero/s donde estará la bibliografía
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Configuración relacionada con la accesibilidad del documento PDF
+%% (tagged PDF).
+%% Comentado porque tiene algunos problems relacionados con otros paquetes
+% \usepackage{accessibility}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Configuración de cabeceras y pies de página
+\usepackage{emptypage}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\leftmark}
+\fancyhead[RO]{\rightmark}
+\setlength{\headheight}{1.5\headheight}
+\cfoot{\thepage}
+
+\renewcommand{\chaptermark}[1]{\markboth{\textbf{Capítulo \thechapter. #1}}{}}
+\renewcommand{\sectionmark}[1]{\markright{\textbf{\thesection. #1}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Configuración para profundidad de la numeración e índice
+\addto\captionsspanish{\renewcommand{\contentsname}{Tabla de contenidos}}
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{2}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Algunos paquetes útiles
+\usepackage{colortbl} % colores en tablas
+\usepackage{longtable} % tablas en múltiples páginas
+\usepackage[colorlinks=true, linkcolor=blue, urlcolor=blue, pdfborder={0 0 0},pdfusetitle]{hyperref} % hypervínculos
+\usepackage{parskip} % separa párrafos con espacio vertical
+\usepackage{csquotes} % comillas en diferentes idiomas y contextos.
+\usepackage{xcolor} % colores en texto y background
+\usepackage[textwidth=2.5cm, textsize=smaller]{todonotes} % notas con errores o cosas por hacer
+\setlength{\marginparwidth}{2.5cm}
+\usepackage{lipsum} % permite incluir lorem-ipsum y hacer pruebas
+\usepackage{relsize} % permite cambiar tamaños de texto relativos (\smaller y \larger)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Configuración para insertar y referirse a código en cualquier
+%% lenguaje de programación
+\usepackage{listings}
+
+\definecolor{commentcolor}{rgb}{.804,0,0}
+\definecolor{keywordcolor}{rgb}{.608,.19,1}
+\definecolor{stringcolor}{rgb}{0,.545,0}
+\lstdefinestyle{color}{
+  identifierstyle=\itshape,
+  commentstyle=\itshape\color{commentcolor},
+  keywordstyle=\bfseries\color{keywordcolor},
+  stringstyle=\color{stringcolor},
+  emphstyle=\bfseries
+}
+
+\lstdefinestyle{nocolor}{
+  identifierstyle=\itshape,
+  commentstyle=\itshape,
+  keywordstyle=\bfseries,
+  stringstyle=,
+  emphstyle=\itshape
+}
+
+\lstset{
+  basicstyle=\ttfamily,
+  style=color,
+  extendedchars=true,
+  literate=
+  {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+  {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+  {à}{{\`a}}1 {è}{{\`e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+  {À}{{\`A}}1 {È}{{\'E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+  {ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+  {Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+  {â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+  {Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+  {œ}{{\oe}}1 {Œ}{{\OE}}1 {æ}{{\ae}}1 {Æ}{{\AE}}1 {ß}{{\ss}}1
+  {ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
+  {ñ}{~n}1
+  {€}{{\EUR}}1 {£}{{\pounds}}1
+  {¿}{{?`}}1 {¡}{{!`}}1 {‘}{`}1 {’}{'}1
+  {·}{.}1,
+  showstringspaces=false
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Cargar datos relativos al trabajo: estudios, título, autor, etc.
+\input{datos_tfg}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Empieza el documento
+\begin{document}
+
+%% -----------------------------------------------
+\input{portada/portada}
+\frontmatter % numeración romana
+
+%%-----------------------------------------------
+%% Capítulos del trabajo
+\input{secciones/desarrollo}
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
