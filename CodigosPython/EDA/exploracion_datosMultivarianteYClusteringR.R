@@ -1,5 +1,7 @@
 # EDA MULTIVARIANTE Y CLUSTERING DE SERIES TEMPORALES
 install.packages("GGally")
+install.packages("entropy")
+install.packages("infotheo")
 
 library(GGally)
 library(tidyverse)
@@ -220,3 +222,86 @@ regimen_summary %>%
   labs(title = "Influencia de variables en cada ciclo",
        x = "Régimen", y = "Valor medio")
 
+
+# ==================================================
+# CÁLCULO DE ENTROPÍA PARA VARIABLES CONTINUAS
+# ==================================================
+
+library(entropy)
+
+# Función para calcular entropía de una variable continua
+calcular_entropia <- function(x, bins = 10) {
+  # Discretizar la variable en bins
+  x_discreto <- cut(x, breaks = bins, include.lowest = TRUE)
+  # Calcular frecuencias
+  frecuencias <- table(x_discreto)
+  # Calcular entropía
+  entropia <- entropy.empirical(frecuencias, unit = "log2")
+  return(entropia)
+}
+
+# Calcular entropía de las variables predictoras
+variables_predictoras <- dataset_final %>%
+  select(sp500_return, vix, petroleo_return, oro_return,
+         tipos_fed, tipos_ecb, inflacion_usa, inflation_eu, 
+         desempleo, curva10Y2Y, eurusd,
+         media_movil_3m, media_movil_6m, volatilidad_3m, 
+         momentum_3m, lag_1, lag_2, lag_3)
+
+entropias <- data.frame(
+  variable = names(variables_predictoras),
+  entropia = sapply(variables_predictoras, calcular_entropia, bins = 10)
+) %>%
+  arrange(desc(entropia))
+
+# Mostrar resultados
+print(entropias)
+
+# Visualizar
+ggplot(entropias, aes(x = reorder(variable, entropia), y = entropia)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Entropía de las Variables Predictoras",
+       subtitle = "Mayor entropía = más información (menos predecible)",
+       x = "Variable", y = "Entropía (bits)")
+
+# ==================================================
+# MUTUAL INFORMATION ENTRE PREDICTORAS Y TARGET
+# ==================================================
+
+library(infotheo)
+
+# Preparar datos (eliminar NAs)
+datos_ml <- dataset_final %>%
+  select(target, sp500_return, vix, petroleo_return, oro_return,
+         tipos_fed, tipos_ecb, inflacion_usa, inflation_eu, 
+         desempleo, curva10Y2Y, eurusd,
+         media_movil_3m, media_movil_6m, volatilidad_3m, 
+         momentum_3m, lag_1, lag_2, lag_3) %>%
+  na.omit()
+
+# Discretizar todas las variables para mutual information
+datos_discretos <- discretize(datos_ml)
+
+# Calcular mutual information con el target
+mi_resultados <- data.frame(
+  variable = names(datos_ml)[-1],  # excluir target
+  mutual_info = sapply(names(datos_ml)[-1], function(var) {
+    mi <- mutinformation(datos_discretos$target, datos_discretos[[var]])
+    return(mi)
+  })
+) %>%
+  arrange(desc(mutual_info))
+
+# Mostrar resultados
+print(mi_resultados)
+
+# Visualizar
+ggplot(mi_resultados, aes(x = reorder(variable, mutual_info), y = mutual_info)) +
+  geom_col(fill = "darkgreen") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Información Mutua con el Rendimiento de Apple",
+       subtitle = "Mayor valor = mayor capacidad predictiva (captura relaciones lineales y no lineales)",
+       x = "Variable", y = "Información Mutua (nats)")

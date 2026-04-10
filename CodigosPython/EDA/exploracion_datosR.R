@@ -16,6 +16,7 @@ library(plotly)
 library(corrplot)
 library(moments)
 library(tseries)
+çlibrary(zoo)
 
 # Seleccionamos solo las variables macro
 dataset_macro <- dataset_final %>%
@@ -242,9 +243,7 @@ cor_target_macro %>%
   labs(title = "Apple vs Variables Macroeconómicas",
        x = "Variable Macro", y = "Correlación con rendimiento de Apple")
 
-# ==================================================
-# 6️⃣ AUTOCORRELACIÓN (para series macro)
-# ==================================================
+# AUTOCORRELACIÓN
 
 # Seleccionar algunas series macro clave
 series_macro <- c("sp500_return", "vix", "petroleo_return", "oro_return",
@@ -258,9 +257,7 @@ for(var in series_macro) {
 }
 par(mfrow = c(1,1))
 
-# ==================================================
-# 7️⃣ DETECCIÓN DE OUTLIERS
-# ==================================================
+#  DETECCIÓN DE OUTLIERS
 
 # Boxplots por variable
 dataset_macro %>%
