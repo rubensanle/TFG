@@ -1,15 +1,15 @@
 \chapter{Datos y preparación del dataset}
-En este cápitulo, se describirá el proceso de obtención, limpieza e integración de los datos macroeconómicos y financieros utilizados en este trabajo. Además, se realizará un análisis exploratorio de datos (EDA) tanto univariante como multivariante, esto se hará para comprender mejor el comportamiento de las variables seleccionadas y su relación con el activo financiero objetivo, que en este caso es Apple Inc. Este análisis permitirá identificar patrones, tendencias y posibles relaciones entre las variables, lo que será fundamental para la fase de modelización predictiva.
+En este capítulo, se describirá el proceso de obtención, limpieza e integración de los datos macroeconómicos y financieros utilizados en este trabajo. Además, se realizará un análisis exploratorio de datos \textbf{(EDA)} tanto univariante como multivariante, esto se hará para comprender mejor el comportamiento de las variables seleccionadas y su relación con el activo financiero objetivo, que en este caso es Apple Inc. Este análisis permitirá identificar patrones, tendencias y posibles relaciones entre las variables, lo que será fundamental para la fase de modelización predictiva.
 
 \section{Datos a usar}
 Tras realizar un estudio de las variables macroeconómicas y financieras más relevantes en los mercados, se ha decidido trabajar con un conjunto de variables representativas que permitan capturar tanto el comportamiento del mercado como el contexto económico global. En concreto, tal y como se mencionó en la introducción, se incluyen los tipos de interés de la Federal Reserve y del European Central Bank, la inflación de Estados Unidos y de la eurozona, la tasa de desempleo en Estados Unidos, el tipo de cambio euro/dólar, la curva de tipos 10Y-2Y de Estados Unidos, así como los retornos del oro, del petróleo y del índice S\&P 500. A su vez, se añade el índice de volatilidad VIX.
 
-Con el objetivo de enriquecer el conjunto de datos, se aplican técnicas de feature engineering sobre algunas de estas variables, construyendo así un dataset lo más completo posible. Asimismo, se incluyen variables propias del activo que se esté estudiando, en este caso Apple Inc, sobre dichas variables, también se aplican transformaciones adicionales para mejorar la capacidad predictiva del modelo.
+Con el objetivo de enriquecer el conjunto de datos, se aplican técnicas de \textbf{feature engineering} sobre algunas de estas variables, construyendo así un dataset lo más completo posible. Asimismo, se incluyen variables propias del activo que se esté estudiando, en este caso Apple Inc, sobre dichas variables, también se aplican transformaciones adicionales para mejorar la capacidad predictiva del modelo.
 
 \section{Obtención e integración de los datos al dataset}
 En cuanto al proceso de obtención, limpieza e integración de los datos, este se ha llevado a cabo de forma estructurada. En primer lugar, se han importado las librerías fredapi \cite{fredapi} e yfinance \cite{yfinance} en Python \cite{python_docs}, con el objetivo de acceder a fuentes externas de datos financieros y macroeconómicos y así no cargar el proyecto con muchos archivos CSV. Posteriormente, se ha definido el período de estudio, comprendido entre el 1 de diciembre de 2001 y el 1 de marzo de 2026, y se ha inicializado un dataset global donde se han ido integrando las distintas variables.
 
-Para la obtención de datos macroeconómicos procedentes de la base de datos de la Federal Reserve Economic Data (FRED), se ha utilizado una API key, que en este caso es \texttt{af59516007957e0c89174b4d426736ca}.
+Para la obtención de datos macroeconómicos procedentes de la base de datos de la Federal Reserve Economic Data (FRED), se ha utilizado una \textbf{API key}, que en este caso es \texttt{af59516007957e0c89174b4d426736ca}.
 
 El proceso comienza con la descarga de los datos. En primer lugar, se descargan los datos del S\&P 500 \cite{sp500} mediante yfinance, obteniendo el precio de cierre. Posteriormente, se transforma la serie a frecuencia mensual, seleccionando el último valor de cada mes. A continuación, se comprueba la existencia de valores nulos y luego se calcula el retorno mediante la función \texttt{pct\_change()}. Esta transformación resulta especialmente útil, ya que los modelos de Machine Learning suelen trabajar mejor con retornos que con precios absolutos. Finalmente, se comprueba de nuevo la existencia de valores nulos y se integra la variable en el dataset global. Este mismo procedimiento se aplica a otras variables como el tipo de cambio euro/dólar o el índice VIX \cite{vix}, con la diferencia de que en estos casos no se calcula el retorno. Las variables se integran en el dataset final a partir de un \texttt{inner join} en la columna \texttt{Date}.
 
@@ -46,9 +46,9 @@ En una aplicación real de esta metodología a otro fondo de inversión o activo
 En el análisis univariante, se examina cada variable de forma individual, con el objetivo de caracterizar su comportamiento estadístico, identificar la presencia de eventos extremos y evaluar su distribución de probabilidad. Para ello, se calcularán medidas de medias y medianas, volatilidad, \emph{skewness} y curtosis, así como los valores mínimos y máximos históricos. Se complementará el análisis con representaciones gráficas como \emph{boxplots}, para detectar \texttt{outliers}. Este análisis univariante es fundamental para comprender el perfil de riesgo individual de cada variable.
 
 \subsubsection{Distribución de las variables macroeconómicas}
-A partir de este análisis, se pretende ver las medias,meianas y volatilidades de cada una de las variables macroeconómicas, así como la presencia de eventos extremos. Este análisis es fundamental para entender el comportamiento individual de cada variable y su impacto potencial en los modelos predictivos.
+A partir de este análisis, se pretende ver las medias, medianas y volatilidades de cada una de las variables macroeconómicas, así como la presencia de eventos extremos. Este análisis es fundamental para entender el comportamiento individual de cada variable y su impacto potencial en los modelos predictivos.
 
-Antes de comnzar, es necesario explicar la curtosis \cite{curtosis} y la \emph{skewness} \cite{skewness}, que son dos medidas estadísticas que permiten caracterizar la forma de la distribución de una variable. La curtosis mide la presencia de colas pesadas en la distribución, es decir, la frecuencia con la que ocurren eventos extremos. Una curtosis mayor que 3 indica colas pesadas, lo que significa que los eventos extremos son más frecuentes de lo normal. Por otro lado, la \emph{skewness} mide la asimetría de la distribución. Una \emph{skewness} positiva indica una asimetría hacia la derecha, lo que significa que hay una mayor propensión a ganancias extremas, mientras que una skewness negativa indica una asimetría hacia la izquierda, lo que sugiere una mayor propensión a pérdidas extremas. En la Figura \ref{fig:skewness_curtosis} se muestra una rápida eplicación visual de como se ven la curtosis y la \emph{skewness} en gráficas.
+Antes de comenzar, es necesario explicar la curtosis \cite{curtosis} y la \emph{skewness} \cite{skewness}, que son dos medidas estadísticas que permiten caracterizar la forma de la distribución de una variable. La curtosis mide la presencia de colas pesadas en la distribución, es decir, la frecuencia con la que ocurren eventos extremos. Una curtosis mayor que 3 indica colas pesadas, lo que significa que los eventos extremos son más frecuentes de lo normal. Por otro lado, la \emph{skewness} mide la asimetría de la distribución. Una \emph{skewness} positiva indica una asimetría hacia la derecha, lo que significa que hay una mayor propensión a ganancias extremas, mientras que una skewness negativa indica una asimetría hacia la izquierda, lo que sugiere una mayor propensión a pérdidas extremas. En la Figura \ref{fig:skewness_curtosis} se muestra una rápida explicación visual de como se ven la curtosis y la \emph{skewness} en gráficas.
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\textwidth]{imagenes/SkewnessCurtosis.png}
@@ -314,7 +314,7 @@ En las Figuras \ref{fig:autocorr_a}, \ref{fig:autocorr_b} y \ref{fig:autocorr_c}
 
 El VIX, por el contrario, muestra varios lags que superan el intervalo de confianza. Esto sugiere que incluir varios de sus valores pasados (lags 1, 2 y 3) puede ayudar a capturar mejor la dinámica del riesgo en el mercado.
 
-Por otro lado, los tipos de interés de la Reserva Federal y del Banco Central Europeo presentan una correlación muy alta y persistente, con múltiples lags significativos y una caída extremadamente lenta de los coeficientes. Es por ello que los tipos de interés son candidatos ideales para modelos como las redes LSTM.
+Por otro lado, los tipos de interés de la Reserva Federal y del Banco Central Europeo presentan una correlación muy alta y persistente, con múltiples lags significativos y una caída extremadamente lenta de los coeficientes. Es por ello que los tipos de interés son candidatos ideales para modelos como las redes \textbf{LSTM}.
 
 En lo que respecta a la inflación, tanto en Estados Unidos como en Europa, muestra un comportamiento similar al de los tipos de interés, con alta persistencia y numerosos lags significativos. Al igual que los tipos, la inflación es una variable con memoria larga que se beneficiará de modelos capaces de capturar sus efectos retardados.
 
@@ -346,12 +346,12 @@ En resumen, el análisis de autocorrelación permite clasificar las variables se
 \end{figure}
 
 \subsection{Análisis multivariante}
-En está sección, se realiza un análisis multivariante de las variables seleccionadas. Este análisis tiene como objetivo entender las relaciones entre las variables, identificar posibles redundancias y reducir la dimensionalidad del dataset para mejorar la eficiencia de los modelos predictivos. Para ello, se aplicarán técnicas como el análisis de correlación, el análisis de componentes principales (PCA) y el análisis de clusters. 
+En esta sección, se realiza un análisis multivariante de las variables seleccionadas. Este análisis tiene como objetivo entender las relaciones entre las variables, identificar posibles redundancias y reducir la dimensionalidad del dataset para mejorar la eficiencia de los modelos predictivos. Para ello, se aplicarán técnicas como el análisis de correlación, el análisis de componentes principales \textbf{(PCA)} y el análisis de \textbf{clusters}. 
 
 \subsubsection{Correlación entre variables}
 Comenzando con la correlación, en la Figura \ref{fig:matriz_corr} se puede ver la matriz de correlación entre las variables. Se distinguen dos tonalidades: un azul oscuro que indica una correlación de +1 (las variables se comportan igual) y un rojo oscuro que indica una correlación inversa de -1 (se comportan de forma opuesta: si una sube, la otra baja). Los valores más cercanos al blanco indican que las variables tienen correlaciones cercanas a 0, por lo que podría decirse que no están correlacionadas.
 
-En dicha matriz se puede observar que las correlaciones más fuertes son entre la inflación de Estados Unidos y la de Europa, con un valor de 0,86, y entre los tipos de la FED y los del BCE, con un valor de 0,81. Esto se puede apreciar en las grñaficas presentadas en la evolución temporal de cada una de las variables, donde se puede ver esta correlación positiva. Por otro lado, destaca la correlación inversa entre el desempleo y la curva 10Y2Y (-0,74), esto se puede comprobar también, fijandose en la gráfica de la evolución temporal entre la curva y el desempleo, cuando una sube la otra baja.
+En dicha matriz se puede observar que las correlaciones más fuertes son entre la inflación de Estados Unidos y la de Europa, con un valor de 0,86, y entre los tipos de la FED y los del BCE, con un valor de 0,81. Esto se puede apreciar en las gráficas presentadas en la evolución temporal de cada una de las variables, donde se puede ver esta correlación positiva. Por otro lado, destaca la correlación inversa entre el desempleo y la curva 10Y2Y (-0,74), esto se puede comprobar también, fijándose en la gráfica de la evolución temporal entre la curva y el desempleo, cuando una sube la otra baja.
 
 Realizar este análisis de correlaciones resulta muy importante, ya que en caso de haber obtenido valores muy altos (>0,9), se habría planteado eliminar ciertas variables para no introducir ruido al entrenar los modelos predictivos. Más adelante, en la sección de selección de variables, se determinará si estas variables se mantienen o se eliminan. En el caso de que se mantengan todas las variables, sería por dos razones, en primer lugar, los modelos de Machine Learning que se emplearán (Random Forest, Gradient Boosting y LSTM) son robustos a la multicolinealidad, a diferencia de los modelos lineales tradicionales. En segundo lugar, mantener ambas variables permite capturar posibles asimetrías entre regiones, como el hecho de que en 2022 la inflación europea superara a la americana, algo que no recogería una variable única.
 
@@ -365,7 +365,7 @@ No obstante, se tendrá en cuenta esta alta correlación en la fase de interpret
 \end{figure}
 
 \subsubsection{Correlación con el target}
-Para justificar el uso de los modelos elegidos, se ha llevado acabo un analisis de correlación entre  las variables macroeconómicas y el target.
+Para justificar el uso de los modelos elegidos, se ha llevado a cabo un analisis de correlación entre  las variables macroeconómicas y el target.
 
 En la Figura \ref{fig:corr_target} se pueden ver las correlaciones entre las variables macroeconómicas y el rendimiento del activo utilizado para las pruebas, que en este caso es Apple. Lo primero que llama la atención es que ninguna correlación supera 0,12 en valor absoluto, lo que indica que la relación entre estas variables y Apple no es lineal, lo cual no es negativo. Más adelante en esta sección se verá el motivo.
 
@@ -486,54 +486,41 @@ Tras este análisis, se confirma que cada ciclo está marcado por una serie de c
 \label{fig:importancia2}
 \end{figure}
 
-
 \section{Selección de variables y dataset final}
+
 Una vez completado el análisis exploratorio de datos, el siguiente paso fundamental es la selección de las variables que conformarán el dataset definitivo para el entrenamiento de los modelos predictivos. El objetivo es maximizar la información relevante, eliminar redundancias y reducir la dimensionalidad del problema, mejorando así la eficiencia computacional y la capacidad de generalización de los modelos.
 
 Cabe destacar que este proceso de selección se ha ejemplificado utilizando Apple como activo de estudio. En una aplicación real de esta metodología a otro fondo de inversión o activo financiero, los resultados podrían variar, ya que la relación entre las variables macroeconómicas y el target depende del activo concreto analizado. Por esta razón, se ha implementado un proceso automatizado en Python que permite replicar la selección de variables de forma sistemática para cualquier activo o fondo de inversión, garantizando así la reproducibilidad y escalabilidad del método.
 
 \subsection{Criterios de selección}
 
-La estrategia de selección de variables se ha basado en dos criterios diferentes:
+La estrategia de selección de variables se ha basado en dos criterios complementarios:
 
 \begin{enumerate}
-    \item \textbf{Información mutua (Mutual Information - MI)}: Mide la dependencia estadística entre cada variable predictora y el rendimiento del target. Esta propiedad es muy importante en el ámbito financiero, ya que las relaciones entre variables macroeconómicas y los rendimientos de los activos suelen ser complejas.
+    \item \textbf{Información mutua (Mutual Information - MI)} \cite{mutual_info}: Mide la dependencia estadística entre cada variable predictora y el rendimiento del target. Para calcularla se ha utilizado el método de discretización uniforme en 10 bins, simulando el enfoque habitual en el software R, lo que permite capturar relaciones no lineales. Las variables se ordenan de mayor a menor MI.
     
-    \item \textbf{Correlación entre predictores}: Una vez seleccionadas las variables con mayor capacidad predictiva individual, se analiza la matriz de correlación para detectar posibles redundancias. Si dos variables presentan una correlación muy alta (superior a 0,80), se considera que contienen la misma información, por lo que se elimina la menos relevante según su información mutua.
+    \item \textbf{Correlación entre predictores} \cite{correlacion_pearson}: Una vez ordenadas las variables por MI, se recorre la lista y se eliminan aquellas que presentan una correlación de Pearson superior a 0,80 con alguna variable ya seleccionada, quedándose así con la de mayor MI dentro de cada grupo redundante. Este proceso elimina la redundancia informativa.
 \end{enumerate}
+
+Adicionalmente, se ha definido un conjunto de variables macroeconómicas que se mantienen independientemente de su valor de MI por su relevancia conceptual en la literatura financiera. Dichas variables son: el rendimiento del S\&P 500 , el índice de volatilidad VIX, los tipos de interés de la Reserva Federal, la curva de tipos 10Y-2Y, la inflación de Estados Unidos y el rendimiento del activo.
 
 \subsection{Proceso automatizado de selección}
 
-Para garantizar la reproducibilidad y objetividad del proceso, se ha implementado una función en Python que automatiza la selección de variables siguiendo los criterios anteriores. La función, denominada \texttt{seleccion\_variables}, recibe como entrada el dataset completo y devuelve el dataset con las variables seleccionadas.
-
-El algoritmo sigue los siguientes pasos:
+Para garantizar la reproducibilidad y objetividad del proceso, se ha implementado una función en Python denominada \texttt{seleccion\_variables}. El algoritmo sigue los siguientes pasos:
 
 \begin{enumerate}
-    \item \textbf{Cálculo de la información mutua}: Se calcula la MI entre cada variable predictora y el target utilizando la función \texttt{mutual\_info\_regression} de scikit-learn.
+    \item \textbf{Cálculo de la información mutua}: Se discretizan todas las variables predictoras en 10 bins de anchura uniforme y se calcula la MI con respecto al target utilizando la función \texttt{mutual\_info\_regression} de scikit-learn \cite{scikit_learn}.
     
-    \item \textbf{Selección por relevancia}: Se mantienen aquellas variables con MI superior a un umbral establecido.
+    \item \textbf{Eliminación de redundancia por correlación}: Las variables se ordenan de mayor a menor MI. A continuación, se recorre la lista y se selecciona una variable solo si su correlación con cualquiera de las ya seleccionadas es inferior a 0,80. En caso contrario, se descarta.
     
-    \item \textbf{Eliminación de redundancia}: Sobre las variables seleccionadas, se calcula la matriz de correlación. Se ordenan las variables por MI descendente y se recorre la lista, eliminando aquellas que presentan una correlación superior a 0,80 con alguna variable ya seleccionada.
+    \item \textbf{Selección por percentil}: Una vez obtenido el conjunto de variables no redundantes, se calcula el percentil 50 de sus valores de MI y se conservan únicamente las que superan dicho umbral. Esto equivale a quedarse con el 50\% de las variables con mayor MI.
     
-    \item \textbf{Mantenimiento de variables forzadas}: Adicionalmente, se ha definido un conjunto de variables macroeconómicas que se mantienen independientemente de su valor de MI, debido a su relevancia en el ámbito financiero. Dichas variables son el rendimiento del S\&P 500,  el índice de volatilidad VIX, los tipos de interés de la Reserva Federal, la curva de tipos 10Y-2Y y la inflación de Estados Unidos.
+    \item \textbf{Mantenimiento de variables forzadas}: Finalmente, se añaden las variables macroeconómicas forzadas, asegurando así su presencia en el dataset final.
 \end{enumerate}
 
 \subsection{Resultados de la selección}
 
-La Figura \ref{fig:graf_mi} muestra los valores de información mutua obtenidos para cada variable predictora con respecto al rendimiento de Apple.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{imagenes/GrafMI.png}
-\caption{Información mutua entre las variables predictoras y el rendimiento de Apple.}
-\label{fig:graf_mi}
-\end{figure}
-
-Como se puede observar en la figura, las variables con mayor capacidad predictiva individual son las medias móviles y el momentum, seguidas de los tipos de interés de la Reserva Federal, el desempleo y la inflación estadounidense. Por el contrario, el VIX y el rendimiento del S\&P 500 presentan los valores más bajos de información mutua, aunque se mantienen por su relevancia conceptual como variables forzadas.
-
-\subsection{Dataset final}
-
-Tras aplicar el proceso de selección, el dataset final está compuesto por las siguientes variables:
+Tras aplicar el proceso de selección sobre el conjunto de datos completo, las variables seleccionadas se muestran en la Tabla \ref{tab:dataset_final}.
 
 \begin{table}[H]
 \centering
@@ -542,40 +529,45 @@ Tras aplicar el proceso de selección, el dataset final está compuesto por las 
 \hline
 \textbf{Variable} & \textbf{Descripción} \\
 \hline
-sp500\_return & Retorno mensual del S\&P 500 \\
+media\_movil\_6m & Media móvil a 6 meses del rendimiento de Apple \\
 \hline
-vix & Índice de volatilidad VIX \\
+lag\_3 & Retraso de 3 meses del rendimiento de Apple \\
 \hline
-petroleo\_return & Retorno mensual del petróleo \\
+vix & Índice de volatilidad VIX (forzada) \\
 \hline
 oro\_return & Retorno mensual del oro \\
 \hline
-tipos\_fed & Tipos de interés de la Reserva Federal \\
-\hline
-tipos\_ecb & Tipos de interés del Banco Central Europeo \\
-\hline
-inflacion\_usa & Inflación de Estados Unidos (IPC interanual) \\
-\hline
-inflation\_eu & Inflación de la eurozona (IPC interanual) \\
-\hline
-desempleo & Tasa de desempleo en Estados Unidos \\
-\hline
-curva10Y2Y & Diferencial bono 10 años - 2 años \\
-\hline
 eurusd & Tipo de cambio euro/dólar \\
 \hline
-media\_movil\_3m & Media móvil a 3 meses del rendimiento de Apple \\
+lag\_12 & Retraso de 12 meses del rendimiento de Apple \\
 \hline
-media\_movil\_6m & Media móvil a 6 meses del rendimiento de Apple \\
+lag\_6 & Retraso de 6 meses del rendimiento de Apple \\
 \hline
 volatilidad\_3m & Volatilidad móvil a 3 meses del rendimiento de Apple \\
 \hline
-momentum\_3m & Momentum a 3 meses del rendimiento de Apple \\
+inflacion\_usa & Inflación de Estados Unidos (forzada) \\
+\hline
+sp500\_return & Retorno mensual del S\&P 500 (forzada) \\
+\hline
+tipos\_fed & Tipos de interés de la Reserva Federal (forzada) \\
+\hline
+curva10Y2Y & Diferencial bono 10 años - 2 años (forzada) \\
+\hline
+activo\_return & Rendimiento pasado del activo (forzada) \\
 \hline
 \end{tabular}
 \label{tab:dataset_final}
 \end{table}
 
-Este dataset final, que consta de 15 variables predictoras y la variable target, será el utilizado para el entrenamiento y evaluación de los modelos Random Forest, Gradient Boosting y LSTM en los capítulos siguientes.
+\subsection{Creación de datasets para Deep Learning y Machine Learning}
 
+Debido a que los modelos de Machine Learning carecen de memoria temporal, mientras que las redes LSTM están diseñadas específicamente para capturar dependencias secuenciales, se han construido dos versiones del dataset:
 
+\begin{itemize}
+    \item \textbf{Dataset para Deep Learning (LSTM)}: Contiene únicamente las variables seleccionadas en su valor contemporáneo, sin incluir retardos. La LSTM es capaz de aprender directamente la estructura temporal de la serie.
+    \item \textbf{Dataset para Machine Learning}: Parte del mismo conjunto de variables seleccionadas, pero se han añadido retardos (\textit{lags}) de variables económicas, dichas variables son los tipos de interés, la inflación, el VIX, el desempleo y la curva de tipos. De esta forma se proporciona a los modelos de ML información sobre el pasado, y solucionando asi su falta de memoria temporal. Los retrdos que se han incorporado son de 1, 3 y 6 meses para los tipos y la inflación, y de 1, 2 y 3 meses para el VIX, el desempleo y la curva de tipos.
+\end{itemize}
+
+Ambos datasets se han alineado temporalmente eliminando las filas iniciales con valores faltantes debidos a los retardos, garantizando así la comparabilidad de los resultados.
+
+Este dataset final, que consta de 13 variables predictoras y la variable target, será el utilizado para el entrenamiento y evaluación de los modelos Random Forest, Gradient Boosting y LSTM en los capítulos siguientes.
