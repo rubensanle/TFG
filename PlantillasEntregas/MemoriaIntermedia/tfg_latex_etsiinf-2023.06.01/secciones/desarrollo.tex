@@ -1,0 +1,98 @@
+\chapter{Memoria de Seguimiento}
+\label{ch:seguimiento}
+
+\section{Resumen del trabajo realizado}
+
+Hasta la fecha, se han completado las siguientes fases del proyecto:
+
+\begin{enumerate}
+    \item \textbf{Redacción de la Introducción}: Se ha redactado el capítulo introductorio, que incluye la motivación del trabajo, el contexto del análisis financiero y la inteligencia artificial, los objetivos detallados del proyecto, el alcance del trabajo y la estructura de la memoria.
+    
+    \item \textbf{Redacción del Estado del arte}: Se ha completado el marco teórico del trabajo, que abarca los siguientes apartados: mercados financieros, fondos de inversión y acciones, variables macroeconómicas, contextos económicos, conceptos de series temporales, técnicas de análisis de series temporales (análisis visual, autocorrelación, correlación, clustering), selección de variables, Machine Learning (Random Forest y Gradient Boosting), Deep Learning (redes neuronales, retropropagación, LSTM), modelos explicativos (SHAP y LIME), y trabajos anteriores en el ámbito de la inteligencia artificial aplicada a las finanzas.
+    
+    \item \textbf{Obtención y preparación del dataset}: Se ha completado el capítulo de datos, que incluye la selección de variables macroeconómicas y financieras, la obtención de datos en Python mediante las librerías \texttt{fredapi} y \texttt{yfinance}, el procesamiento y limpieza de los datos (cambio a frecuencia mensual, imputación de valores nulos mediante una función combinada) y la aplicación de técnicas de feature engineering sobre el activo Apple (medias móviles, volatilidad, momentum y lags) y sobre las propias variables macroeconómicas para conseguir así retornos y la inflación interanual.
+    
+    \item \textbf{Análisis exploratorio de datos (EDA)}: Se ha realizado en R un análisis exhaustivo de las variables macroeconómicas, incluyendo análisis univariante (distribuciones, curtosis, skewness, valores extremos), evolución temporal de las variables (tipos de interés, inflación, S\&P 500 vs VIX, oro vs petróleo, desempleo vs curva de tipos), boxplots para detección de outliers, análisis de autocorrelación (ACF), análisis de correlación entre variables, análisis de componentes principales (PCA), clustering para identificar regímenes económicos, y correlación con el target (Apple).
+    
+    \item \textbf{Selección de variables}: Se ha implementado una función en Python que automatiza la selección de variables basándose en información mutua y análisis de correlación, permitiendo así optimizar el conjunto de predictoras de forma sistemática y reproducible.
+    
+    \item \textbf{Bibliografía}: Se ha iniciado la recopilación de referencias bibliográficas en formato BibTeX, incluyendo artículos académicos, páginas web y documentación técnica. Se han añadido citas a lo largo del texto y se ha configurado el sistema de bibliografía con Biber.
+\end{enumerate}
+
+El trabajo realizado hasta el momento abarca 4 capítulos de los 8 previstos, quedando pendientes la implementación de los modelos predictivos (Random Forest, Gradient Boosting y LSTM), la evaluación de resultados, las simulaciones de escenarios y la redacción de las conclusiones finales.
+
+\section{Explicación y justificación de las modificaciones al Plan de Trabajo}
+
+\subsection{Cumplimiento de objetivos}
+
+A continuación, se revisa el estado de cumplimiento de los objetivos planteados al inicio del proyecto:
+
+\begin{itemize}
+    \item \textbf{Obtención y gestión de datos}: Este objetivo ha sido completado. Sin embargo, se ha realizado una modificación en comparación con el plan original, ya que inicialmente se contemplaba el diseño de una base de datos relacional para almacenar los datos históricos, pero finalmente, se ha optado por no implementarla, ya que el volumen de datos manejado es reducido y no requiere un sistema gestor de bases de datos. El trabajo con archivos CSV y la integración en un único dataset global mediante Python ha resultado suficiente para garantizar la consistencia, integridad y trazabilidad de los datos, simplificando así el desarrollo sin pérdida de funcionalidad.
+    
+    \item \textbf{Procesamiento (adquisición, limpieza, transformación e integración de datos)}: Este objetivo también ha sido completado. Se han obtenido los datos mediante las librerías \texttt{yfinance} y \texttt{fredapi}, se han limpiado y transformado a frecuencia mensual, y se han integrado en un dataset global.
+    
+    \item \textbf{Generación de nuevas variables y preparación de dataset multivariante}: Al igual que los objetivos anteriores, este objetivo también ha sido completado. Se han aplicado técnicas de feature engineering para generar medias móviles, volatilidad, momentum y lags sobre el activo Apple, así como retornos e inflación interanual sobre las variables macroeconómicas. A su vez, se ha realizado una función de selección de variables, para así dejar el dataset preparado para la fase de modelado.
+\end{itemize}
+
+El resto de los objetivos (desarrollo de modelos predictivos, predicciones a diferentes horizontes temporales, backtesting, comparación de modelos, técnicas de interpretabilidad SHAP y LIME, y documentación de resultados) se encuentran pendientes de realizar en la siguiente fase del proyecto.
+
+\subsection{Revisión de la lista de tareas}
+
+En lo que respecta al cumplimiento de cada una de las tareas planificadas:
+
+\begin{itemize}
+    \item \textbf{Tarea 1 — Planificación del proyecto}: Tarea completada. Se ha definido el plan de trabajo, el alcance del proyecto y la dedicación horaria estimada.
+    
+    \item \textbf{Tarea 2 — Estudio teórico}: La segunda tarea también ha sido completada. Se ha realizado el estudio de los conceptos necesarios: análisis financiero, series temporales, Machine Learning, Deep Learning y modelos predictivos (Random Forest, Gradient Boosting, LSTM).
+    
+    \item \textbf{Tarea 3 — Estudio del dominio}: Tarea completada también. Se ha estudiado el funcionamiento de los mercados financieros, los fondos de inversión, las variables macroeconómicas, las fuentes de datos disponibles y las herramientas a utilizar.
+    
+    \item \textbf{Tarea 4 — Diseño del sistema}: Esta tarea también ha sido completada. Se ha definido el dataframe multivariante, el pipeline de análisis de datos y el diccionario de variables. No se ha implementado una base de datos relacional al no ser necesaria dado el volumen reducido de datos.
+    
+    \item \textbf{Tarea 5 — Recolección y preparación}: La quinta tarea también ha sido completada. Se han obtenido los datos históricos, se ha realizado la limpieza, transformación a frecuencia mensual, imputación de valores nulos y se ha construido el dataset final.
+    
+    \item \textbf{Tarea 6 — Análisis de datos}: La sexta tarea, al igual que las anteriores, ha sido completada. Se ha realizado un análisis exhaustivo de los datos, incluyendo estudio de tendencias, volatilidad, correlaciones, análisis de componentes principales (PCA), clustering y selección de variables.
+    
+    \item \textbf{Tarea 7 — Desarrollo de modelos}: Pendiente. Corresponde a la siguiente fase del proyecto: entrenamiento y validación de modelos (Random Forest, Gradient Boosting y LSTM multivariante-multistep), así como la realización de backtesting.
+    
+    \item \textbf{Tarea 8 — Evaluación y simulación}: Pendiente. Se realizará la comparación de modelos, experimentos con y sin variables macroeconómicas y simulaciones de escenarios \textit{what-if}.
+    
+    \item \textbf{Tarea 9 — Interpretabilidad y visualización}: Pendiente. Se aplicarán las técnicas SHAP y LIME para analizar la importancia de las variables, y se generarán gráficos y visualizaciones de los resultados.
+    
+    \item \textbf{Tarea 10 — Documentación y defensa}: En curso. Se ha redactado la memoria de seguimiento y los primeros capítulos de la memoria final. Quedan pendientes la memoria final completa, la presentación y el guión de defensa.
+\end{itemize}
+
+\subsection{Revisión del Diagrama de Gantt}
+
+Por último, se compara el proceso que se planificó al inicio del proyecto (Figura \ref{fig:gantt_planificado}) con el que realmente se ha seguido (Figura \ref{fig:gantt_actual}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{imagenes/DiagramaGantt.png}
+\caption{Diagrama de Gantt planificado inicialmente.}
+\label{fig:gantt_planificado}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{imagenes/gantt_actual.png}
+\caption{Diagrama de Gantt actualizado con la ejecución real del proyecto.}
+\label{fig:gantt_actual}
+\end{figure}
+
+\subsection{Desviaciones respecto al plan inicial}
+
+A continuación, se explican las principales desviaciones entre el plan inicial y la ejecución real:
+
+\begin{itemize}
+    \item \textbf{Tarea 2 (Estudio teórico) y Tarea 3 (Estudio del dominio)}: Las tareas 2 y 3 no se iniciaron en la semana 1, sino en la semana 2. Ambas se prolongaron hasta la semana 4 inclusive, en lugar de finalizar en la semana 3 como estaba previsto inicialmente. Esta desviación fue debida a la carga inicial de trabajo en algunas asignaturas.
+    
+    \item \textbf{Tarea 4 (Diseño del sistema)}: Se completó más rápido de lo esperado. Inicialmente planificada para ocupar las semanas 4 y 5, finalmente solo requirió la semana 4. La rapidez en esta tarea se debe a que el acceso a datos e inclusión de los mismos en un dataset inicial resultó más sencillo de lo previsto.
+    
+    \item \textbf{Tarea 5 (Recolección y preparación de datos)}: La tarea 5 se ha retrasado dos semanas respecto al plan inicial. Esto es debido a que la construcción del dataset final dependía de la finalización de la Tarea 6 (Análisis de datos), que no se completó hasta la semana 9. Como consecuencia, la Tarea 5 se ha extendido hasta las semanas 8 y 9.
+    
+    \item \textbf{Tarea 6 (Análisis de datos)}: Por último, la tarea 6 se ha completado en la semana 9, según lo previsto, sin desviaciones importantes.
+\end{itemize}
+
+El resto de las tareas se mantienen según lo planificado. Se espera poder completarlas en los plazos establecidos inicialmente.

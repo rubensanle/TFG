@@ -1,0 +1,78 @@
+\chapter{Introducción}
+\label{ch:intro}
+
+\section{Motivación}
+La motivación de este Trabajo de Fin de Grado nace tras la realización de mis prácticas, donde pude acercarme al funcionamiento del sector bancario y al uso del análisis de datos en el ámbito financiero. A partir de esta experiencia y tras conocer el potencial del Machine Learning aplicado a los mercados financieros, surgió el interés por desarrollar un modelo capaz de analizar y predecir la evolución de activos como acciones o fondos de inversión.
+
+\section{Contexto}
+En las últimas décadas, los mercados financieros han experimentado una notable transformación impulsada por dos fenómenos paralelos, la globalización económica y la revolución digital. La primera ha estrechado los vínculos entre los mercados mundiales, mientras que la segunda ha generado un aumento masivo en el volumen de información disponible, dando lugar al concepto de "Big Data financiero" \cite{vancsura2025}. Este escenario plantea un desafío crítico para analistas e inversores, ya que las metodologías tradicionales resultan insuficientes para procesar y extraer valor de la enorme cantidad de datos generados continuamente.
+
+Ante esta situación, la Inteligencia Artificial (IA) y, específicamente, el Machine Learning (ML), han adquirido un gran protagonismo. Estas herramientas permiten abordar la complejidad de los mercados actuales, mejorando las capacidades predictivas en áreas como la evaluación de riesgos y la gestión de carteras \cite{elalami2025}. Dentro de este ecosistema, modelos como Random Forest, Gradient Boosting y las redes neuronales LSTM se han consolidado como referentes para la predicción de series temporales. Su éxito radica en la capacidad para capturar relaciones no lineales y procesar grandes volúmenes de datos de forma automatizada, superando las limitaciones de los métodos estadísticos clásicos.
+
+A pesar de estos avances, la aplicación de modelos complejos en finanzas presenta un reto fundamental: su naturaleza de "caja negra". La falta de interpretabilidad genera preocupaciones sobre la transparencia, la confianza y el cumplimiento normativo \cite{mdpi_blackbox2025}. En respuesta a esta problemática, ha surgido la Inteligencia Artificial Explicable (XAI), que defiende la necesidad de desarrollar modelos que sean precisos y, al mismo tiempo, comprensibles para el ser humano. Técnicas de interpretabilidad post-hoc como SHAP y LIME permiten desglosar la contribución de cada variable a las predicciones, facilitando así la justificación de resultados ante organismos regulatorios \cite{ye2025}.
+
+Este Trabajo de Fin de Grado se sitúa precisamente en la intersección entre la potencia predictiva y la transparencia. El objetivo es desarrollar un sistema que aproveche el potencial de la IA en el análisis de inversiones sin renunciar a la comprensión de los factores que determinan cada predicción, un equilibrio esencial para su aplicación práctica en el mundo real \cite{mdpi_blackbox2025}.
+
+\section{Objetivos del trabajo y alcance}
+
+El presente Trabajo de Fin de Grado tiene como objetivo el \textbf{diseño e implementación} de un sistema informático orientado al análisis y la predicción del comportamiento de activos financieros, concretamente \textbf{fondos de inversión y acciones}. Para ello, se emplearán técnicas de análisis de datos, \textbf{Machine Learning y Deep Learning}, con el fin de desarrollar un modelo predictivo que permita predecir la evolución a diferentes horizontes temporales de estos activos y, a su vez, analizar los factores que influyen en su comportamiento.
+
+A continuación, se enumeran las fases que componen el desarrollo del trabajo:
+
+\begin{enumerate}
+
+    \item \textbf{Obtención y gestión de datos.} Se recopilarán datos históricos desde el año 2002 hasta el año 2025, correspondientes tanto a variables financieras como a variables macroeconómicas. Entre estas variables se incluirán precios históricos de activos financieros, así como distintos indicadores macroeconómicos importantes, como la inflación, los tipos de interés o las tasas de desempleo, entre otros. Todos estos datos serán almacenados e integrados en un \textbf{dataset global}, para así garantizar la consistencia, integridad y trazabilidad de la información utilizada durante el proyecto.
+
+    \item \textbf{Procesamiento y preparación del dataset.} Esta fase incluirá tareas de \textbf{limpieza, transformación e integración} de los datos, con el objetivo de homogeneizar los distintos formatos de información, tratar posibles valores faltantes y establecer una \textbf{frecuencia mensual} para todas las variables.
+
+    \item \textbf{Análisis exploratorio de datos (EDA).} Se realizará un estudio de las tendencias existentes en las series temporales, así como un análisis de la \textbf{volatilidad} de los activos y las \textbf{correlaciones} entre las diferentes variables del dataset. El objetivo es identificar posibles dependencias fuertes que puedan introducir ruido y, por lo tanto, afectar al rendimiento de los modelos.
+
+    \item \textbf{Generación de nuevas variables (Feature Engineering).} A partir de los datos procesados, se crearán nuevas variables mediante técnicas de \textbf{feature engineering}, como retornos financieros, medias móviles o medidas de volatilidad. El objetivo es dotar al dataset de variables relevantes que aporten valor a la hora de la predicción.
+
+    \item \textbf{Desarrollo de los modelos predictivos.} Para abordar el problema desde diferentes enfoques, se implementarán modelos de \textbf{Machine Learning} (Random Forest y Gradient Boosting), que ofrecen una mayor interpretabilidad y transparencia, y un modelo de \textbf{Deep Learning} basado en redes neuronales recurrentes del tipo \textbf{LSTM}, que aporta mayor precisión.
+
+    \item \textbf{Entrenamiento, validación y evaluación de los modelos.} Se realizará un proceso de \textbf{backtesting} para analizar el comportamiento de los modelos simulando su aplicación en distintos períodos históricos del mercado. La capacidad predictiva y de generalización se evaluará mediante métricas de error como \textbf{MAE} (Error Absoluto Medio) o \textbf{MSE} (Error Cuadrático Medio).
+
+    \item \textbf{Comparación con y sin variables macroeconómicas.} Se compararán modelos entrenados únicamente con variables propias del activo financiero y modelos que incorporen además \textbf{variables macroeconómicas}, para analizar si su inclusión mejora la capacidad predictiva del sistema.
+
+    \item \textbf{Generación de predicciones y simulación de escenarios.} Se generarán predicciones a distintos horizontes temporales (corto, medio y largo plazo). Además, el sistema permitirá realizar \textbf{simulaciones bajo diferentes escenarios}, modificando determinadas variables macroeconómicas para analizar el comportamiento de los modelos ante distintas condiciones económicas o de mercado.
+
+    \item \textbf{Interpretabilidad de los modelos (XAI).} Dado que uno de los objetivos del trabajo es entender los factores que influyen en las predicciones, se aplicarán técnicas de \textbf{Explainable Artificial Intelligence (XAI)}, concretamente los métodos \textbf{SHAP y LIME}, que permiten analizar la contribución de cada variable en las predicciones generadas.
+
+    \item \textbf{Presentación de resultados.} Los resultados obtenidos serán presentados mediante \textbf{gráficos y visualizaciones} que representen de forma clara el comportamiento de los modelos, la evolución de las predicciones y el impacto de las distintas variables en el rendimiento de los activos financieros.
+
+\end{enumerate}
+
+Por último, el \textbf{alcance} del trabajo abarca todo el proceso necesario para la construcción de un sistema de predicción basado en datos, desde la obtención de la información hasta el análisis e interpretación de los resultados obtenidos.
+
+\section{Estructura de la memoria}
+La memoria se estructura en varios capítulos que abordan de forma progresiva y detallada los distintos aspectos relacionados con el desarrollo de un sistema de análisis y predicción de activos financieros mediante técnicas de análisis de datos, Machine Learning y Deep Learning:
+
+\begin{enumerate}
+    \item \textbf{Capítulo 1: Introducción}
+    Se presenta el contexto general del trabajo, así como la motivación que ha llevado al desarrollo del mismo. En este capítulo se describen los objetivos principales del trabajo, al igual que su alcance. Asimismo, contiene un resumen de la estructura de la memoria con el fin de facilitar la comprensión del trabajo.
+
+    \item \textbf{Capítulo 2: Estado del arte}
+    Este capítulo, busca explicar los fundamentos teóricos necesarios para la compresión del proyecto. En primer lugar, se explican los conceptos básicos sobre los mercados financieros, las acciones y los fondos de inversión, así como algunas de las variables macroeconómicas que influyen en su evolución. Posteriormente, se introducen las series temporales financieras, junto con sus conceptos. Continuando con el capítulo, se describen los fundamentos de Machine Learning y Deep Learning aplicados a problemas de predicción temporal, haciendo especial énfasis en los modelos que se utilizarán en el desarrollo del trabajo. Finalmente, se buscarán y mencionarán, trabajos anteriores en el ámbito de la predicción financiera con herramientas de IA.
+
+    \item \textbf{Capítulo 3: Datos y preparación del dataset}
+    Aquí se describe el proceso de obtención, procesamiento y preparación de los datos usados a lo largo del proyecto. En primer lugar, se mencionarán las diferentes fuentes de datos utilizadas para la recopilación de variables financieras y macroeconómicas. Posteriormente, se explica el proceso de construcción del dataset, donde se incluye la selección de variables y la unificación de la frecuencia temporal de los datos. A continuación, se explican las etapas de procesamiento de los datos, como pueden ser la limpieza, la transformación y la normalización. Por último, se describen las técnicas de feature engineering utilizadas para generar nuevas variables a partir de las originales. A su vez, se realiza un análisis exploratorio de los datos con el objetivo de identificar tendencias, patrones y relaciones entre variables. Finalmente, se realizará a una selección de variables atendiendo al análisis mencionado y se obtendrá el dataset final que será usado en los modelos predictivos.
+
+    \item \textbf{Capítulo 4: Modelos predictivos}
+    En este capítulo, se describen cada uno de los modelos de aprendizaje automático implementados para afrontar el problema de predicción de series temporales financieras. Primero de todo, se presentan los modelos de Machine Learning que serán usados en el proyecto, dichos modelos son Random Forest y Gradient Boosting. Más tarde, será introducido el modelo de Deep Learning basado en redes neuronales recurrentes del tipo LSTM, aquí, describiremos su arquitectura y su capacidad para identificar dependencias temporales en los datos. Finalmente, se explicará el proceso de entrenamiento de los modelos, donde dividiremos los datos en conjuntos de entrenamiento, validación y prueba.
+
+    \item \textbf{Capítulo 5: Experimentos y resultados}
+    En este capítulo se presenta el proceso de evaluación de los modelos implementados. En primer lugar, se aplicará y describirá la evaluación de los modelos por backtesting, donde haremos simulaciones con datos históricos. A continuación, se introducirán las métricas de evaluación empleadas para medir la precisión de las predicciones. Del mismo modo, en este capítulo se realizará una comparación entre los distintos modelos implementados, donde se verá el comportamiento de cada uno de ellos  veremos cual tiene mejor capacidad predictiva. Además en este capítulo, se realizarán distintos experimentos donde se estudiará el impacto de la incorporación de variables macroeconómicas en los modelos, comparando resultados obtenidos con y sin estas variables, también realizaremos más experimentos como someter a los modelos a distintos escenarios como simulaciones con variables macroeconómicas dinámicas o estáticas o escenarios hipotéticos que permiten estudiar el comportamiento del sistema ante posibles cambios en las condiciones del mercado. Finalmente, se aplicarán técnicas de interpretabilidad, como SHAP y LIME, con el objetivo de analizar la importancia de las variables y comprender mejor las predicciones generadas por los modelos.
+
+    \item \textbf{Capítulo 6: Conclusiones}
+    Aquí, se resumen los principales resultados obtenidos a lo largo del trabajo. En este capítulo se analizan las conclusiones que extraemos del estudio, mostrando qué modelos han mostrado un mejor rendimiento y en qué medida la incorporación de variables macroeconómicas ha contribuido a mejorar la capacidad predictiva del sistema. Asimismo, se discuten las principales limitaciones del trabajo y se proponen posibles líneas futuras de investigación que podrían ampliar o mejorar el sistema desarrollado.
+
+    \item \textbf{Análisis de impacto}
+    En este capítulo se analizan las implicaciones del trabajo desde diferentes perspectivas, evaluando su posible impacto tecnológico, económico y social, así como su potencial aplicación en el ámbito del análisis financiero y la toma de decisiones basada en datos. Además, se alinea el trabajo con los Objetivos de Desarrollo Sostenible (ODS) de la Agenda 2030, ya que el uso de técnicas avanzadas de inteligencia artificial para la mejora del análisis financiero contribuye a una toma de decisiones más eficiente y transparente, lo que repercute positivamente en el crecimiento económico, la innovación tecnológica y la formación de calidad en el sector.
+    
+    \item \textbf{Bibliografía}
+    Recoge todas las referencias bibliográficas utilizadas durante el desarrollo del trabajo.
+
+    \item \textbf{Anexos}
+    En esta sección se incluyen materiales adicionales que complementan la información presentada en los capítulos anteriores, como pueden ser códigos fuente, gráficos adicionales, tablas de resultados o cualquier otro recurso que se considere relevante para una mejor comprensión del trabajo realizado.
+\end{enumerate}

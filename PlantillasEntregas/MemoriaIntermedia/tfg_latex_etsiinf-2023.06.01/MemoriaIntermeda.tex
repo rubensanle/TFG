@@ -44,7 +44,7 @@
 %% Algunos paquetes útiles
 \usepackage{colortbl} % colores en tablas
 \usepackage{longtable} % tablas en múltiples páginas
-\usepackage[pdfborder={0 0 0},pdfusetitle]{hyperref} % hypervínculos
+\usepackage[colorlinks=true, linkcolor=blue, urlcolor=blue, pdfborder={0 0 0},pdfusetitle]{hyperref} % hypervínculos
 \usepackage{parskip} % separa párrafos con espacio vertical
 \usepackage{csquotes} % comillas en diferentes idiomas y contextos.
 \usepackage{xcolor} % colores en texto y background
@@ -52,7 +52,7 @@
 \setlength{\marginparwidth}{2.5cm}
 \usepackage{lipsum} % permite incluir lorem-ipsum y hacer pruebas
 \usepackage{relsize} % permite cambiar tamaños de texto relativos (\smaller y \larger)
-
+\usepackage{float} % para controlar la posición de figuras y tablas
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Configuración para insertar y referirse a código en cualquier
 %% lenguaje de programación
@@ -107,41 +107,12 @@
 %% Empieza el documento
 \begin{document}
 
-%% -----------------------------------------------
 \input{portada/portada}
-\frontmatter % numeración romana
 
 %% -----------------------------------------------
-\input{secciones/resumen}
-
-%% -----------------------------------------------
-\tableofcontents
-
-\mainmatter % numeración arábiga
-
-%%-----------------------------------------------
-%% Capítulos del trabajo
-\input{secciones/intro}
-
+%% Memoria de Seguimiento (sin numeración de capítulo)
 \input{secciones/desarrollo}
-
-\input{secciones/impacto}
-
-\input{secciones/conclusiones}
-
-%%-----------------------------------------------
-%% Bibliografía
 \cleardoublepage
-\phantomsection
-\addcontentsline{toc}{chapter}{Bibliografía}
-\printbibliography
-
-%% -----------------------------------------------
-%% Anexos
-\appendix
-\part*{Anexos}
-\addcontentsline{toc}{part}{Anexos}
-\input{secciones/anexo1}
 
 \end{document}
 

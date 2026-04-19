@@ -7,6 +7,7 @@ install.packages("plotly")
 install.packages("corrplot")
 install.packages("moments")    
 install.packages("tseries")
+install.packages("FinTS")
 
 #Cargamos bibliotecas necesarias
 library(tidyverse)
@@ -16,7 +17,9 @@ library(plotly)
 library(corrplot)
 library(moments)
 library(tseries)
-çlibrary(zoo)
+library(zoo)
+library(FinTS)
+
 
 # Seleccionamos solo las variables macro
 dataset_macro <- dataset_final %>%
@@ -29,7 +32,6 @@ dataset_macro_conActivoRet <- dataset_final %>%
          tipos_fed, tipos_ecb, inflacion_usa, inflation_eu, 
          desempleo, curva10Y2Y, eurusd, activo_return)
 
-# ANÁLISIS DESCRIPTIVO -Aqui buscaremos entender las variables del dataset (tipos, na, escala ...)
 
 # Estadísticos descriptivos
 summary(dataset_macro)
@@ -150,37 +152,59 @@ p7 <- dataset_final %>%
        y = "Rendimiento (%)")
 ggplotly(p7)
 
-# DISTRIBUCIÓN DE RETORNOS (solo para variables que son retornos)
-
-
-# Seleccionar variables macro NUMÉRICAS (excluyendo las que no son retornos)
-# Me quedo con las que tienen sentido para distribución (continuas, sin muchas restricciones)
-dataset_macro %>%
-  select(sp500_return, vix, petroleo_return, oro_return, 
-         tipos_fed, tipos_ecb, inflacion_usa, inflation_eu, 
-         desempleo, curva10Y2Y, eurusd) %>%
-  pivot_longer(everything()) %>%
-  ggplot(aes(x = value, fill = name)) +
-  geom_density(alpha = 0.5) +
-  facet_wrap(~name, scales = "free", ncol = 3) +
-  geom_vline(xintercept = 0, linetype = "dashed", color = "red", alpha = 0.5) +
+# Desempleo vs Curva10Y2Y
+ggplot(dataset_macro, aes(x = Date)) +
+  geom_line(aes(y = desempleo, color = "Desempleo"), size = 0.8) +
+  geom_line(aes(y = curva10Y2Y * 3, color = "Curva 10Y2Y (x3)"), size = 0.8) +
+  scale_color_manual(values = c("Desempleo" = "red", 
+                                "Curva 10Y2Y (x3)" = "purple")) +
+  scale_y_continuous(
+    name = "Desempleo",
+    sec.axis = sec_axis(~./3, name = "Curva 10Y2Y")
+  ) +
   theme_minimal() +
-  labs(title = "Distribución de Variables Macroeconómicas",
-       subtitle = "Se muestra la densidad de cada variable (línea roja = valor 0)",
-       x = "Valor", y = "Densidad") +
-  theme(legend.position = "none")
+  labs(title = "Desempleo vs Curva de Tipos",
+       x = "Fecha",
+       color = "Variable")
 
-# QQ-plots para normalidad
-par(mfrow = c(1,3))
-qqnorm(dataset_macro$sp500_return, main = "S&P 500"); qqline(dataset_macro$sp500_return, col = "red")
-qqnorm(dataset_macro$petroleo_return, main = "Petróleo"); qqline(dataset_macro$petroleo_return, col = "red")
-qqnorm(dataset_macro$oro_return, main = "Oro"); qqline(dataset_macro$oro_return, col = "red")
-par(mfrow = c(1,1))
+# DISTRIBUCIONES DE VARIABLES MACRO
+variables_dist <- c("sp500_return", "vix", "petroleo_return", "oro_return", 
+                    "tipos_fed", "tipos_ecb", "inflacion_usa", "inflation_eu", 
+                    "desempleo", "curva10Y2Y", "eurusd")
+
+# Nombres legibles para los títulos
+nombres_legibles <- c(
+  "sp500_return" = "S&P 500",
+  "vix" = "VIX",
+  "petroleo_return" = "Petróleo",
+  "oro_return" = "Oro",
+  "tipos_fed" = "Tipos de Interés (Fed)",
+  "tipos_ecb" = "Tipos de Interés (ECB)",
+  "inflacion_usa" = "Inflación (USA)",
+  "inflation_eu" = "Inflación (Europa)",
+  "desempleo" = "Desempleo",
+  "curva10Y2Y" = "Curva 10Y-2Y",
+  "eurusd" = "EUR/USD"
+)
+
+# Generar un gráfico por variable
+for(var in variables_dist) {
+  p <- dataset_macro %>%
+    select(all_of(var)) %>%
+    ggplot(aes(x = .data[[var]])) +
+    geom_density(fill = "steelblue", alpha = 0.7) +
+    geom_vline(xintercept = 0, linetype = "dashed", color = "red", alpha = 0.7) +
+    theme_minimal() +
+    labs(title = paste("Distribución de", nombres_legibles[var]),
+         subtitle = "Línea roja = valor 0",
+         x = nombres_legibles[var], y = "Densidad")
+  
+  # Mostrar el gráfico
+  print(p)
+}
 
 
 # MATRIZ DE CORRELACIONES
-
-# Código simple y efectivo
 cor_macro <- dataset_macro %>%
   select(-Date) %>%
   cor(use = "pairwise.complete.obs")
@@ -199,26 +223,8 @@ corrplot(round(cor_macro, 2),
          title = "Matriz de Correlaciones",
          mar = c(0,0,2,0))
 
-# Desempleo vs Curva10Y2Y
-ggplot(dataset_macro, aes(x = Date)) +
-  geom_line(aes(y = desempleo, color = "Desempleo"), size = 0.8) +
-  geom_line(aes(y = curva10Y2Y * 3, color = "Curva 10Y2Y (x3)"), size = 0.8) +
-  scale_color_manual(values = c("Desempleo" = "red", 
-                                "Curva 10Y2Y (x3)" = "purple")) +
-  scale_y_continuous(
-    name = "Desempleo",
-    sec.axis = sec_axis(~./3, name = "Curva 10Y2Y")
-  ) +
-  theme_minimal() +
-  labs(title = "Desempleo vs Curva de Tipos",
-       x = "Fecha",
-       color = "Variable")
-
 # MACRO VS APPLE
-
 # Relacionar macro con el target de Apple
-# Usamos dataset_final (el original con todas las variables)
-
 cor_macro_target <- dataset_final %>%
   select(target, sp500_return, vix, petroleo_return, oro_return,
          tipos_fed, tipos_ecb, inflacion_usa, inflation_eu, 
@@ -243,9 +249,9 @@ cor_target_macro %>%
   labs(title = "Apple vs Variables Macroeconómicas",
        x = "Variable Macro", y = "Correlación con rendimiento de Apple")
 
-# AUTOCORRELACIÓN
 
-# Seleccionar algunas series macro clave
+# AUTOCORRELACIÓN
+# Seleccionar series macro clave
 series_macro <- c("sp500_return", "vix", "petroleo_return", "oro_return",
                   "tipos_fed", "tipos_ecb", "inflacion_usa", "inflation_eu",
                   "desempleo", "curva10Y2Y", "eurusd", "activo_return")
@@ -258,7 +264,6 @@ for(var in series_macro) {
 par(mfrow = c(1,1))
 
 #  DETECCIÓN DE OUTLIERS
-
 # Boxplots por variable
 dataset_macro %>%
   select(-Date) %>%
@@ -287,3 +292,56 @@ dataset_macro %>%
                         outliers_sup = ~sum(. > quantile(., 0.75, na.rm = TRUE) + 1.5 * IQR(., na.rm = TRUE), na.rm = TRUE)))) %>%
   pivot_longer(everything()) %>%
   print(n = Inf)
+
+
+# VOLATILIDAD HISTÓRICA MENSUAL
+# Calcular volatilidad mensual de cada variable
+volatilidad_mensual <- dataset_macro %>%
+  select(-Date) %>%
+  summarise(across(everything(),
+                   list(volatilidad = ~sd(., na.rm = TRUE)))) %>%
+  pivot_longer(everything(), names_to = "variable", values_to = "volatilidad_mensual") %>%
+  arrange(desc(volatilidad_mensual))
+
+print(volatilidad_mensual)
+
+# Gráfico de barras
+ggplot(volatilidad_mensual, aes(x = reorder(variable, volatilidad_mensual), 
+                                y = volatilidad_mensual, fill = variable)) +
+  geom_col() +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Volatilidad Mensual de las Variables Macroeconómicas",
+       x = "Variable", y = "Volatilidad Mensual") +
+  theme(legend.position = "none")
+
+
+# Función para calcular volatilidad móvil
+calcular_vol_movil <- function(x, ventana = 12) {
+  rollapplyr(x, width = ventana, FUN = sd, fill = NA, na.rm = TRUE)
+}
+# Función para calcular volatilidad móvil
+calcular_vol_movil <- function(x, ventana = 12) {
+  rollapplyr(x, width = ventana, FUN = sd, fill = NA, na.rm = TRUE)
+}
+
+# Calcular volatilidad móvil para las variables
+dataset_vol_movil <- dataset_macro %>%
+  mutate(across(-Date, ~calcular_vol_movil(.x, ventana = 12))) %>%
+  pivot_longer(-Date, names_to = "variable", values_to = "volatilidad_mensual")
+
+# Obtener lista de  las variables
+todas_variables <- unique(dataset_vol_movil$variable)
+print("Todas las variables a visualizar:")
+print(todas_variables)
+
+# Gráfico de evolución de volatilidad para las variables
+ggplot(dataset_vol_movil, aes(x = Date, y = volatilidad_mensual, color = variable)) +
+  geom_line(size = 0.6) +
+  facet_wrap(~variable, scales = "free_y", ncol = 3) +
+  theme_minimal() +
+  theme(legend.position = "none",
+        strip.text = element_text(size = 8),
+        axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Evolución de la volatilidad de variables macroeconomicas",
+       x = "Fecha", y = "Volatilidad Mensual")

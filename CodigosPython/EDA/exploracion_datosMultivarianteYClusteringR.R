@@ -9,6 +9,8 @@ library(factoextra)
 library(cluster)
 library(dendextend)
 library(pheatmap)
+library(entropy)
+library(infotheo)
 
 
 # Cargar datos
@@ -20,8 +22,14 @@ dataset_macro <- dataset_final %>%
          tipos_fed, tipos_ecb, inflacion_usa, inflation_eu, 
          desempleo, curva10Y2Y, eurusd)
 
-# ANÁLISIS DE COMPONENTES PRINCIPALES
+dataset_macro_precios <- dataset_final %>%
+  select(sp500_return, vix, petroleo_return, oro_return,
+         tipos_fed, tipos_ecb, inflacion_usa, inflation_eu, 
+         desempleo, curva10Y2Y, eurusd, activo_return, precio, target)
+dataset_finan_precios <- dataset_final %>%
+  select(media_movil_3m, media_movil_6m, media_movil_12m, volatilidad_3m, volatilidad_6m, momentum_3m, momentum_6m, momentum_12m, precio, activo_return, lag_1, lag_2, lag_3, lag_6, lag_12)
 
+# ANÁLISIS DE COMPONENTES PRINCIPALES
 # Escalar los datos
 macro_scaled <- scale(dataset_macro)
 
@@ -52,55 +60,31 @@ fviz_contrib(pca_result, choice = "var", axes = 6, top = 10) +
 fviz_contrib(pca_result, choice = "var", axes = 7, top = 10) +
   labs(title = "Contribución de Variables al PC7")
 
-# ==================================================
-# 2. CLUSTERING DE PERÍODOS (k-means con k=4)
-# ==================================================
+# HEATMAP DE CORRELACIONES
 
-# Usamos los componentes principales para reducir dimensionalidad
-pca_scores <- as.data.frame(pca_result$x[, 1:7])  # Primeros 4 componentes
-pca_scores$Date <- dataset_final$Date
+#Matriz de correlaciones sin clustering
+cor_macro <- cor(dataset_macro_precios, use = "pairwise.complete.obs")
+cor_fin <- cor(dataset_finan_precios, use = "pairwise.complete.obs")
 
-# Escalar los scores para clustering
-scores_scaled <- scale(pca_scores[, 1:7])
 
-# Determinar número óptimo de clusters (método del codo)
-fviz_nbclust(scores_scaled, kmeans, method = "wss") +
-  labs(title = "Número Óptimo de Clusters (Método del Codo)")
-
-# Aplicar k-means con k = 4 (según el codo en k=4)
-set.seed(123)
-kmeans_result <- kmeans(scores_scaled, centers = 6, nstart = 25)
-
-# Añadir clusters al dataset
-dataset_final$cluster <- as.factor(kmeans_result$cluster)
-
-# Visualizar los clusters en el tiempo
-ggplot(dataset_final, aes(x = Date, y = target, color = cluster)) +
-  geom_line(alpha = 0.7) +
-  geom_point(size = 0.5) +
-  theme_minimal() +
-  labs(title = "Clusters de Períodos según Comportamiento Macroeconómico (k=4)",
-       subtitle = "Cada color representa un régimen económico diferente",
-       x = "Fecha", y = "Rendimiento Apple",
-       color = "Cluster")
-
-# ==================================================
-# 5. HEATMAP DE CORRELACIONES CON CLUSTERING
-# ==================================================
-
-cor_macro <- cor(dataset_macro, use = "pairwise.complete.obs")
-
-# Heatmap con clustering
+# Heatmap sin clustering (orden original de las variables)
 pheatmap(cor_macro,
-         main = "Matriz de Correlaciones con Clustering",
-         clustering_method = "ward.D2",
+         main = "Matriz de Correlaciones",
          display_numbers = TRUE,
          number_format = "%.2f",
-         fontsize_number = 8)
+         fontsize_number = 8,
+         cluster_rows = FALSE,   # Desactiva clustering en filas
+         cluster_cols = FALSE)   # Desactiva clustering en columnas
 
-# ==================================================
-# REGÍMENES ECONÓMICOS DEFINIDOS POR EVENTOS (6 PERÍODOS)
-# ==================================================
+pheatmap(cor_fin,
+         main = "Matriz de Correlaciones",
+         display_numbers = TRUE,
+         number_format = "%.2f",
+         fontsize_number = 8,
+         cluster_rows = FALSE,   # Desactiva clustering en filas
+         cluster_cols = FALSE)   # Desactiva clustering en columnas
+
+# CLUSTERING
 
 # Definir regímenes basados en eventos históricos
 dataset_final$regimen <- case_when(
@@ -223,11 +207,7 @@ regimen_summary %>%
        x = "Régimen", y = "Valor medio")
 
 
-# ==================================================
-# CÁLCULO DE ENTROPÍA PARA VARIABLES CONTINUAS
-# ==================================================
-
-library(entropy)
+# Cálculo de la entropía
 
 # Función para calcular entropía de una variable continua
 calcular_entropia <- function(x, bins = 10) {
@@ -266,19 +246,15 @@ ggplot(entropias, aes(x = reorder(variable, entropia), y = entropia)) +
        subtitle = "Mayor entropía = más información (menos predecible)",
        x = "Variable", y = "Entropía (bits)")
 
-# ==================================================
-# MUTUAL INFORMATION ENTRE PREDICTORAS Y TARGET
-# ==================================================
-
-library(infotheo)
+# Mutual information con target
 
 # Preparar datos (eliminar NAs)
 datos_ml <- dataset_final %>%
   select(target, sp500_return, vix, petroleo_return, oro_return,
          tipos_fed, tipos_ecb, inflacion_usa, inflation_eu, 
-         desempleo, curva10Y2Y, eurusd,
-         media_movil_3m, media_movil_6m, volatilidad_3m, 
-         momentum_3m, lag_1, lag_2, lag_3) %>%
+         desempleo, curva10Y2Y, eurusd, media_movil_12m,
+         media_movil_3m, media_movil_6m, volatilidad_3m,volatilidad_6m, 
+         momentum_3m, momentum_6m, momentum_12m, lag_1, lag_2, lag_3, lag_6, lag_12,  activo_return, precio) %>%
   na.omit()
 
 # Discretizar todas las variables para mutual information

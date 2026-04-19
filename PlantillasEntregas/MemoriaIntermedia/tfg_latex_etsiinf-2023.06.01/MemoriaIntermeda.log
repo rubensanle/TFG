@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.2.22)  28 FEB 2026 13:46
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.2.22)  18 APR 2026 00:47
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**./PlanDeTrabajo.tex
-(PlanDeTrabajo.tex
+**./MemoriaIntermeda.tex
+(MemoriaIntermeda.tex
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
 (C:\Users\34620\AppData\Local\Programs\MiKTeX\tex/latex/base\book.cls
@@ -998,18 +998,26 @@ Package: lipsum 2021-09-20 v2.7 150 paragraphs of Lorem Ipsum dummy text
 (C:\Users\34620\AppData\Local\Programs\MiKTeX\tex/latex/relsize\relsize.sty
 Package: relsize 2013/03/29 ver 4.1
 )
+(C:\Users\34620\AppData\Local\Programs\MiKTeX\tex/latex/float\float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count470
+\float@exts=\toks41
+\float@box=\box71
+\@float@everytoks=\toks42
+\@floatcapt=\box72
+)
 (C:\Users\34620\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.sty
-\lst@mode=\count470
-\lst@gtempboxa=\box71
-\lst@token=\toks41
-\lst@length=\count471
+\lst@mode=\count471
+\lst@gtempboxa=\box73
+\lst@token=\toks43
+\lst@length=\count472
 \lst@currlwidth=\dimen275
-\lst@column=\count472
-\lst@pos=\count473
+\lst@column=\count473
+\lst@pos=\count474
 \lst@lostspace=\dimen276
 \lst@width=\dimen277
-\lst@newlines=\count474
-\lst@lineno=\count475
+\lst@newlines=\count475
+\lst@lineno=\count476
 \lst@maxwidth=\dimen278
 
 (C:\Users\34620\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstpatch.sty
@@ -1017,9 +1025,9 @@ File: lstpatch.sty 2025/11/14 1.11b (Carsten Heinz)
 )
 (C:\Users\34620\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstmisc.sty
 File: lstmisc.sty 2025/11/14 1.11b (Carsten Heinz)
-\c@lstnumber=\count476
-\lst@skipnumbers=\count477
-\lst@framebox=\box72
+\c@lstnumber=\count477
+\lst@skipnumbers=\count478
+\lst@framebox=\box74
 )
 (C:\Users\34620\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.cfg
 File: listings.cfg 2025/11/14 1.11b listings configuration
@@ -1045,13 +1053,13 @@ File: t1pbk.fd 2001/06/04 font definitions for T1/pbk.
 LaTeX Font Info:    Font shape `T1/pbk/m/n' in size <10.95> not available
 (Font)              Font shape `T1/pbk/l/n' tried instead on input line 108.
 
-(PlanDeTrabajo.aux
+(MemoriaIntermeda.aux
 LaTeX Info: Redefining \. on input line 12.
 LaTeX Info: Redefining \% on input line 12.
 Package babel Info: 'spanish' activates 'spanish' shorthands.
 (babel)             Reported on input line 12.
 )
-\openout1 = `PlanDeTrabajo.aux'.
+\openout1 = `MemoriaIntermeda.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 108.
 LaTeX Font Info:    ... okay on input line 108.
@@ -1125,29 +1133,29 @@ File: english.lbx 2025/07/10 v3.21 biblatex localization (PK/MW)
 Package biblatex Info: Input encoding 'utf8' detected.
 Package biblatex Info: Automatic encoding selection.
 (biblatex)             Assuming data encoding 'utf8'.
-\openout3 = `PlanDeTrabajo.bcf'.
+\openout3 = `MemoriaIntermeda.bcf'.
 
 Package biblatex Info: Trying to load bibliographic data...
-Package biblatex Info: ... file 'PlanDeTrabajo.bbl' not found.
+Package biblatex Info: ... file 'MemoriaIntermeda.bbl' not found.
 
-No file PlanDeTrabajo.bbl.
+No file MemoriaIntermeda.bbl.
 Package biblatex Info: Reference section=0 on input line 108.
 Package biblatex Info: Reference segment=0 on input line 108.
 
 (C:\Users\34620\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mk
 ii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count478
+\scratchcounter=\count479
 \scratchdimen=\dimen279
-\scratchbox=\box73
-\nofMPsegments=\count479
-\nofMParguments=\count480
-\everyMPshowfont=\toks42
-\MPscratchCnt=\count481
+\scratchbox=\box75
+\nofMPsegments=\count480
+\nofMParguments=\count481
+\everyMPshowfont=\toks44
+\MPscratchCnt=\count482
 \MPscratchDim=\dimen280
-\MPnumerator=\count482
-\makeMPintoPDFobject=\count483
-\everyMPtoPDFconversion=\toks43
+\MPnumerator=\count483
+\makeMPintoPDFobject=\count484
+\everyMPtoPDFconversion=\toks45
 )
 (C:\Users\34620\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-b
 ase.sty
@@ -1160,13 +1168,13 @@ fg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
 Package hyperref Info: Link coloring ON on input line 108.
- (PlanDeTrabajo.out) (PlanDeTrabajo.out)
+ (MemoriaIntermeda.out) (MemoriaIntermeda.out)
 \@outlinefile=\write5
-\openout5 = `PlanDeTrabajo.out'.
+\openout5 = `MemoriaIntermeda.out'.
 
-\c@lstlisting=\count484
+\c@lstlisting=\count485
  (portada/portada.tex
-<portada/escudo_upm.png, id=6, 245.91875pt x 200.75pt>
+<portada/escudo_upm.png, id=34, 245.91875pt x 200.75pt>
 File: portada/escudo_upm.png Graphic file (type png)
 <use portada/escudo_upm.png>
 Package pdftex.def Info: portada/escudo_upm.png  used on input line 6.
@@ -1188,7 +1196,7 @@ LaTeX Font Info:    Font shape `T1/pbk/m/n' in size <14.4> not available
 (Font)              Font shape `T1/pbk/l/n' tried instead on input line 12.
 LaTeX Font Info:    Font shape `T1/pbk/b/n' in size <14.4> not available
 (Font)              Font shape `T1/pbk/db/n' tried instead on input line 13.
-<portada/escudo_etsiinf.png, id=8, 160.6pt x 170.6375pt>
+<portada/escudo_etsiinf.png, id=36, 160.6pt x 170.6375pt>
 File: portada/escudo_etsiinf.png Graphic file (type png)
 <use portada/escudo_etsiinf.png>
 Package pdftex.def Info: portada/escudo_etsiinf.png  used on input line 17.
@@ -1208,37 +1216,60 @@ LaTeX Font Info:    Font shape `T1/pbk/m/n' in size <12> not available
 {C:/Users/34620/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/3462
 0/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc} <./portada/escudo_
 upm.png> <./portada/escudo_etsiinf.png>]) (secciones/desarrollo.tex
-LaTeX Font Info:    Font shape `T1/pbk/b/n' in size <12> not available
-(Font)              Font shape `T1/pbk/db/n' tried instead on input line 3.
-
-Overfull \hbox (1.32887pt too wide) in paragraph at lines 19--20
-[]\T1/pbk/l/n/10.95 Desarrollo de mo-de-los pre-dic-ti-vos: Ma-chi-ne Lear-ning
- (ex-pli-ca-bi-li-dad) y Deep
- []
-
+Cap\'{\i }tulo 1.
+LaTeX Font Info:    Font shape `T1/pbk/b/n' in size <24.88> not available
+(Font)              Font shape `T1/pbk/db/n' tried instead on input line 1.
 LaTeX Font Info:    Font shape `T1/pbk/b/n' in size <10.95> not available
-(Font)              Font shape `T1/pbk/db/n' tried instead on input line 29.
-[1
+(Font)              Font shape `T1/pbk/db/n' tried instead on input line 9.
+LaTeX Font Info:    Trying to load font information for T1+pcr on input line 13
+.
+(C:\Users\34620\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\t1pcr.fd
+File: t1pcr.fd 2001/06/04 font definitions for T1/pcr.
+)
+[2
 
 ]
-Overfull \hbox (2.34659pt too wide) in paragraph at lines 33--34
-[]\T1/pbk/db/n/10.95 Tarea 5 ^^V Re-co-lec-ción y pre-pa-ra-ción\T1/pbk/l/n/10.
-95 : ob-ten-ción de da-tos, lim-pie-za, trans-
- []
-
-<imagenes/diagramaGantt.png, id=25, 790.75426pt x 289.68225pt>
-File: imagenes/diagramaGantt.png Graphic file (type png)
-<use imagenes/diagramaGantt.png>
-Package pdftex.def Info: imagenes/diagramaGantt.png  used on input line 45.
-(pdftex.def)             Requested size: 426.79135pt x 156.34651pt.
-[2 <./imagenes/diagramaGantt.png>]
-<imagenes/propuestaTutor.png, id=34, 1035.87pt x 434.8245pt>
-File: imagenes/propuestaTutor.png Graphic file (type png)
-<use imagenes/propuestaTutor.png>
-Package pdftex.def Info: imagenes/propuestaTutor.png  used on input line 55.
-(pdftex.def)             Requested size: 426.79135pt x 179.15498pt.
-) [3 <./imagenes/propuestaTutor.png>]
-(PlanDeTrabajo.aux
+LaTeX Font Info:    Font shape `T1/pbk/b/n' in size <12> not available
+(Font)              Font shape `T1/pbk/db/n' tried instead on input line 26.
+LaTeX Info: Redefining \. on input line 39.
+LaTeX Info: Redefining \% on input line 39.
+Package babel Info: 'spanish' activates 'spanish' shorthands.
+(babel)             Reported on input line 39.
+ [3]
+LaTeX Font Info:    Font shape `T1/pbk/m/it' in size <10.95> not available
+(Font)              Font shape `T1/pbk/l/it' tried instead on input line 59.
+LaTeX Info: Redefining \. on input line 64.
+LaTeX Info: Redefining \% on input line 64.
+ [4]
+<imagenes/DiagramaGantt.png, id=68, 790.75426pt x 289.68225pt>
+File: imagenes/DiagramaGantt.png Graphic file (type png)
+<use imagenes/DiagramaGantt.png>
+Package pdftex.def Info: imagenes/DiagramaGantt.png  used on input line 72.
+(pdftex.def)             Requested size: 384.1096pt x 140.7123pt.
+<imagenes/gantt_actual.png, id=69, 583.58025pt x 211.992pt>
+File: imagenes/gantt_actual.png Graphic file (type png)
+<use imagenes/gantt_actual.png>
+Package pdftex.def Info: imagenes/gantt_actual.png  used on input line 79.
+(pdftex.def)             Requested size: 384.1096pt x 139.53345pt.
+LaTeX Info: Redefining \. on input line 92.
+LaTeX Info: Redefining \% on input line 92.
+ [5
+pdfTeX warning (ext4): destination with the same identifier (name{figure.1.1}) 
+has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.92 
+     
+pdfTeX warning (ext4): destination with the same identifier (name{figure.1.2}) 
+has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.92 
+      <./imagenes/DiagramaGantt.png> <./imagenes/gantt_actual.png>])
+LaTeX Info: Redefining \. on input line 115.
+LaTeX Info: Redefining \% on input line 115.
+ [6]
+(MemoriaIntermeda.aux
 LaTeX Info: Redefining \sptext on input line 12.
 LaTeX Info: Redefining \. on input line 12.
 LaTeX Info: Redefining \% on input line 12.
@@ -1247,26 +1278,28 @@ LaTeX Info: Redefining \% on input line 12.
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
  ***********
-Package rerunfilecheck Info: File `PlanDeTrabajo.out' has not changed.
-(rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
-Package logreq Info: Writing requests to 'PlanDeTrabajo.run.xml'.
-\openout1 = `PlanDeTrabajo.run.xml'.
+Package rerunfilecheck Info: File `MemoriaIntermeda.out' has not changed.
+(rerunfilecheck)             Checksum: 477969AA36A48E6D07FA5717C39EB069;1699.
+Package logreq Info: Writing requests to 'MemoriaIntermeda.run.xml'.
+\openout1 = `MemoriaIntermeda.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 32086 strings out of 467871
- 610991 string characters out of 5418376
- 1544848 words of memory out of 5000000
- 60462 multiletter control sequences out of 15000+600000
- 642521 words of font info for 65 fonts, out of 8000000 for 9000
+ 32216 strings out of 467871
+ 613076 string characters out of 5418376
+ 1547360 words of memory out of 5000000
+ 60571 multiletter control sequences out of 15000+600000
+ 646212 words of font info for 71 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 117i,11n,121p,704b,1852s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 117i,11n,121p,769b,1852s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/34620/AppData/Local/Programs/MiKTeX/fonts/type1/urw/bookman/ubkd8a.
 pfb><C:/Users/34620/AppData/Local/Programs/MiKTeX/fonts/type1/urw/bookman/ubkl8
-a.pfb>
-Output written on PlanDeTrabajo.pdf (4 pages, 301093 bytes).
+a.pfb><C:/Users/34620/AppData/Local/Programs/MiKTeX/fonts/type1/urw/bookman/ubk
+li8a.pfb><C:/Users/34620/AppData/Local/Programs/MiKTeX/fonts/type1/urw/courier/
+ucrr8a.pfb>
+Output written on MemoriaIntermeda.pdf (6 pages, 256356 bytes).
 PDF statistics:
- 57 PDF objects out of 1000 (max. 8388607)
- 13 named destinations out of 1000 (max. 500000)
- 33 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 107 PDF objects out of 1000 (max. 8388607)
+ 22 named destinations out of 1000 (max. 500000)
+ 89 words of extra memory for PDF output out of 10000 (max. 10000000)
 

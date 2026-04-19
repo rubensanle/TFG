@@ -1,0 +1,581 @@
+\chapter{Datos y preparación del dataset}
+En este cápitulo, se describirá el proceso de obtención, limpieza e integración de los datos macroeconómicos y financieros utilizados en este trabajo. Además, se realizará un análisis exploratorio de datos (EDA) tanto univariante como multivariante, esto se hará para comprender mejor el comportamiento de las variables seleccionadas y su relación con el activo financiero objetivo, que en este caso es Apple Inc. Este análisis permitirá identificar patrones, tendencias y posibles relaciones entre las variables, lo que será fundamental para la fase de modelización predictiva.
+
+\section{Datos a usar}
+Tras realizar un estudio de las variables macroeconómicas y financieras más relevantes en los mercados, se ha decidido trabajar con un conjunto de variables representativas que permitan capturar tanto el comportamiento del mercado como el contexto económico global. En concreto, tal y como se mencionó en la introducción, se incluyen los tipos de interés de la Federal Reserve y del European Central Bank, la inflación de Estados Unidos y de la eurozona, la tasa de desempleo en Estados Unidos, el tipo de cambio euro/dólar, la curva de tipos 10Y-2Y de Estados Unidos, así como los retornos del oro, del petróleo y del índice S\&P 500. A su vez, se añade el índice de volatilidad VIX.
+
+Con el objetivo de enriquecer el conjunto de datos, se aplican técnicas de feature engineering sobre algunas de estas variables, construyendo así un dataset lo más completo posible. Asimismo, se incluyen variables propias del activo que se esté estudiando, en este caso Apple Inc, sobre dichas variables, también se aplican transformaciones adicionales para mejorar la capacidad predictiva del modelo.
+
+\section{Obtención e integración de los datos al dataset}
+En cuanto al proceso de obtención, limpieza e integración de los datos, este se ha llevado a cabo de forma estructurada. En primer lugar, se han importado las librerías fredapi \cite{fredapi} e yfinance \cite{yfinance} en Python \cite{python_docs}, con el objetivo de acceder a fuentes externas de datos financieros y macroeconómicos y así no cargar el proyecto con muchos archivos CSV. Posteriormente, se ha definido el período de estudio, comprendido entre el 1 de diciembre de 2001 y el 1 de marzo de 2026, y se ha inicializado un dataset global donde se han ido integrando las distintas variables.
+
+Para la obtención de datos macroeconómicos procedentes de la base de datos de la Federal Reserve Economic Data (FRED), se ha utilizado una API key, que en este caso es \texttt{af59516007957e0c89174b4d426736ca}.
+
+El proceso comienza con la descarga de los datos. En primer lugar, se descargan los datos del S\&P 500 \cite{sp500} mediante yfinance, obteniendo el precio de cierre. Posteriormente, se transforma la serie a frecuencia mensual, seleccionando el último valor de cada mes. A continuación, se comprueba la existencia de valores nulos y luego se calcula el retorno mediante la función \texttt{pct\_change()}. Esta transformación resulta especialmente útil, ya que los modelos de Machine Learning suelen trabajar mejor con retornos que con precios absolutos. Finalmente, se comprueba de nuevo la existencia de valores nulos y se integra la variable en el dataset global. Este mismo procedimiento se aplica a otras variables como el tipo de cambio euro/dólar o el índice VIX \cite{vix}, con la diferencia de que en estos casos no se calcula el retorno. Las variables se integran en el dataset final a partir de un \texttt{inner join} en la columna \texttt{Date}.
+
+En el caso del oro y el petróleo, el proceso presenta una particularidad adicional: tras la obtención de los datos y su conversión a frecuencia mensual, se encuentran valores nulos debido a días en los que no hay actividad en los mercados. Para resolver este problema, se ha implementado una función denominada \texttt{imputar\_valores\_faltantes}, que combina tres métodos de imputación: interpolación lineal (50\%), media móvil (30\%) y último valor observado (20\%). Esta combinación permite obtener una serie mucho más completa. Una vez rellenados los valores nulos, se calcula el retorno y se incorpora al dataset final.
+
+El resto de variables macroeconómicas, como los tipos de interés, la curva de tipos o el desempleo, se obtienen directamente desde FRED siguiendo un proceso similar: se descargan, se ajustan a frecuencia mensual y se integran los datos en el dataset. En el caso del desempleo, al presentar valores nulos, ha sido necesario aplicar la función \texttt{imputar\_valores\_faltantes} antes de integrar los datos en el dataset final.
+
+Por otro lado, la inflación es una variable importante para el modelo, sin embargo, no se obtiene directamente, sino que se calcula a partir del Índice de Precios al Consumo (IPC) \cite{ipc} mediante la variación interanual. Para ello, se utiliza la función \texttt{pct\_change(12)}. De este modo, se obtiene una medida más representativa de la evolución de los precios en cada región.
+
+Finalmente, en el dataset final se incorporan las variables propias del activo analizado, obtenidas a través de yfinance. A partir de los precios de cierre, se aplican técnicas de feature engineering para generar nuevas variables como el retorno, medias móviles, volatilidad, momentum y lags, que resultan fundamentales para capturar la dinámica temporal del activo. Todas estas variables se integran en el dataset global mediante un inner join a partir de la columna Date.
+
+Para concluir, se realiza una validación final del dataset, verificando que todas las variables se encuentran en frecuencia mensual, que no existen valores nulos y que los tipos de datos son correctos. Asimismo, se renombran las columnas para facilitar su interpretación y, finalmente, el dataset se exporta en formato CSV, lo que permite su posterior utilización en herramientas como R \cite{r_manual} o Google Sheets \cite{google_sheets}. Todo el proceso anterior se puede ver en la Figura \ref{fig:proceso_datos}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{imagenes/proceso_datos.png}
+\caption{Diagrama del proceso de obtención, limpieza e integración de datos. Fuente: elaboración propia.}
+\label{fig:proceso_datos}
+\end{figure}
+
+\section{Análisis exploratorio de datos (EDA)}
+Una vez obtenidos todos los datos e integrados en el dataset, se procede a la realización del análisis exploratorio de datos (EDA). Dicho análisis se ha estructurado en dos grandes bloques, primero un análisis univariante, donde se examina cada variable macroeconómica de forma individual, y luego, un análisis multivariante, donde se estudian las relaciones entre las distintas variables y su interacción con el activo financiero objetivo. También se realizará clustering, con el objetivo de identificar diferentes contextos económicos a lo largo del período de estudio. Dicho dataset cuenta con 265 filas y sin valores nulos, por lo que no habrá valores que entorpezcan el análisis.
+
+El análisis exploratorio de datos realizado en este trabajo se ha centrado en las variables macroeconómicas, ya que estas constituyen el único conjunto de variables que permanece constante independientemente del activo o fondo de inversión analizado. Dado que el objetivo del TFG es desarrollar una metodología general para el análisis predictivo de fondos de inversión, resulta fundamental comprender en profundidad el comportamiento de estas variables, su evolución temporal, sus distribuciones, sus correlaciones y su memoria, ya que son los elementos que aportarán el contexto económico a cualquier modelo predictivo.
+
+En cuanto a las variables específicas del activo, en este caso se ha elegido Apple Inc \cite{apple_inc} como caso de estudio, y se ha aplicado feature engineering sobre los precios del activo como medias móviles a 3, 6 y 12 meses para capturar tendencias; volatilidades móviles para medir el riesgo; momentum para reflejar la inercia del precio; y lags del rendimiento en los horizontes 1, 2, 3, 6 y 12 meses para capturar la posible dependencia temporal del propio activo.
+
+Estas variables específicas no han sido objeto de un análisis exploratorio detallado por dos razones. En primer lugar, porque su comportamiento es particular del activo concreto que se esté analizando, por lo que un análisis profundo de las mismas no aportaría valor generalizable a la metodología propuesta. En segundo lugar, porque su construcción sigue criterios estándar en el análisis técnico y en la modelización de series temporales financieras, siendo suficiente con incluirlas directamente en los modelos predictivos.
+
+En una aplicación real de esta metodología a otro fondo de inversión o activo financiero, bastaría con sustituir los datos específicos de Apple por los del nuevo activo, manteniendo la misma estructura de variables técnicas y conservando intacto el análisis del entorno macroeconómico.
+
+\subsection{Análisis univariante}
+
+En el análisis univariante, se examina cada variable de forma individual, con el objetivo de caracterizar su comportamiento estadístico, identificar la presencia de eventos extremos y evaluar su distribución de probabilidad. Para ello, se calcularán medidas de medias y medianas, volatilidad, \emph{skewness} y curtosis, así como los valores mínimos y máximos históricos. Se complementará el análisis con representaciones gráficas como \emph{boxplots}, para detectar \texttt{outliers}. Este análisis univariante es fundamental para comprender el perfil de riesgo individual de cada variable.
+
+\subsubsection{Distribución de las variables macroeconómicas}
+A partir de este análisis, se pretende ver las medias,meianas y volatilidades de cada una de las variables macroeconómicas, así como la presencia de eventos extremos. Este análisis es fundamental para entender el comportamiento individual de cada variable y su impacto potencial en los modelos predictivos.
+
+Antes de comnzar, es necesario explicar la curtosis \cite{curtosis} y la \emph{skewness} \cite{skewness}, que son dos medidas estadísticas que permiten caracterizar la forma de la distribución de una variable. La curtosis mide la presencia de colas pesadas en la distribución, es decir, la frecuencia con la que ocurren eventos extremos. Una curtosis mayor que 3 indica colas pesadas, lo que significa que los eventos extremos son más frecuentes de lo normal. Por otro lado, la \emph{skewness} mide la asimetría de la distribución. Una \emph{skewness} positiva indica una asimetría hacia la derecha, lo que significa que hay una mayor propensión a ganancias extremas, mientras que una skewness negativa indica una asimetría hacia la izquierda, lo que sugiere una mayor propensión a pérdidas extremas. En la Figura \ref{fig:skewness_curtosis} se muestra una rápida eplicación visual de como se ven la curtosis y la \emph{skewness} en gráficas.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{imagenes/SkewnessCurtosis.png}
+\caption{Imagen explicativa de skewness y curtosis. Fuente: Media2u.com.}
+\label{fig:skewness_curtosis}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{Distribución de retornos del S\&P 500:}
+    En primer lugar, se analiza el S\&P 500, que presenta un rendimiento medio mensual del 0,80\% con una volatilidad del 4,20\%. A su vez, presenta un \emph{skewness} de -0,618, lo que indica una mayor propensión a pérdidas extremas. Por otro lado, la curtosis de 4,39 confirma la presencia de colas pesadas. Los valores de la \emph{skewness} y la curtosis indican que el S\&P 500 es más propenso a tener pérdidas grandes que ganancias grandes debido a la asimetría negativa. Además, el valor de la curtosis, mayor que 3, indica que los eventos extremos ocurren con mayor frecuencia. En resumen, los eventos extremos son más habituales de lo normal y son más propensos a generar pérdidas. En lo que respecta al rendimiento, el valor mínimo del S\&P 500 se registró en octubre de 2008, con un valor de -16,9\% en plena crisis financiera, mientras que el máximo del 12,7\% data de abril de 2020, tras el desplome inicial por la pandemia. Todo lo mencionado es visible en la Figura \ref{fig:distribucion_sp}.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/DistribucionSP.png}
+    \caption{Gráfica de distribución de los retornos del S\&P 500. Fuente: elaboración propia.}
+    \label{fig:distribucion_sp}
+    \end{figure}
+
+    \item \textbf{Distribución del VIX:}
+    En lo que respecta al VIX, que se muestra en la Figura \ref{fig:distribucion_vix}, este presenta una media de 19,05 puntos, aunque su mediana de 16,63 es significativamente inferior, lo que refleja la naturaleza episódica de la volatilidad. Esta volatilidad tiene un valor del 7,93\%. Su \emph{skewness} de 2,09 indica una fuerte asimetría positiva, lo que significa que hay muchos valores bajos pero algunos extremadamente altos, mientras que la curtosis de 8,69 confirma la presencia de colas muy pesadas. Esto indica que los picos de pánico en el mercado son eventos extremos que ocurren con mayor frecuencia de lo normal y, cuando ocurren, lo hacen de forma muy intensa. El valor máximo de 59,89 se alcanzó en octubre de 2008, durante la crisis financiera. Por el contrario, el mínimo de 9,51 se registró en julio de 2017, un período de calma y baja volatilidad.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/DistribucionVIX.png}
+    \caption{Gráfica de la distribución del índice de volatilidad VIX. Fuente: elaboración propia.}
+    \label{fig:distribucion_vix}
+    \end{figure}
+
+    \item \textbf{Distribución de retornos del petróleo:}
+    En cuanto al petróleo, que se muestra en la Figura \ref{fig:distribucion_petroleo}, este destaca como el activo más volátil del dataset, con una desviación típica mensual (volatilidad) del 10,4\%, más del doble que la del S\&P 500. Su \emph{skewness} de 1,78 indica asimetría positiva, mientras que su curtosis de 22,5 es exageradamente elevada. Estos dos valores muestran que el petróleo sufre movimientos extremos con una frecuencia enorme y que estos extremos tienden a ser en forma de crecimiento. En cuanto toca a los valores extremos, destaca la caída del retorno en un -40,8\% en marzo de 2020, cuando la demanda colapsó por los confinamientos globales provocados por el COVID-19 \cite{covid19}. Por otro lado, en mayo de 2020, subió un 88,4\%.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/DistribucionPetroleo.png}
+    \caption{Gráfica de la distribución de los retornos del petróleo. Fuente: elaboración propia.}
+    \label{fig:distribucion_petroleo}
+    \end{figure}
+
+    \item \textbf{Distribución de retornos del oro:}
+    El oro, que es considerado activo refugio, presenta una volatilidad mensual del 4,4\%, similar a la del S\&P 500. Su retorno mínimo de -18\% en marzo de 2020 se dio al inicio de la pandemia, mientras que el máximo del 13,9\% en abril de 2020 confirma su recuperación como activo refugio. Su curtosis de 4,34 confirma la presencia de colas pesadas, aunque menos extremas que en el petróleo. En lo que respecta a su \emph{skewness}, este es de -0,241, lo que indica una ligera asimetría negativa. Todo lo mencionado es visible en la Figura \ref{fig:distribucion_oro}.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/DistribucionOro.png}
+    \caption{Gráfica de la distribución de los retornos del oro. Fuente: elaboración propia.}
+    \label{fig:distribucion_oro}
+    \end{figure}
+
+    \item \textbf{Distribución de los tipos de interes FED:}
+    Pasando ahora a los tipos de interés de la Reserva Federal, que se muestran en la Figura \ref{fig:distribucion_fed}, estos presentan una media del 1,78\%, aunque la mediana del 1,00\% revela largos períodos de tipos cercanos a cero. Su volatilidad mensual es del 1,93\%, reflejando cambios graduales. Su \emph{skewness} de 0,750 indica asimetría positiva, mientras que la curtosis de 1,98, inferior a 3, indica que la distribución es más plana que la normal, es decir, los tipos no cuentan con muchos eventos extremos. En cuanto al máximo, este se da en agosto de 2023, siendo los tipos de un 5,33\%, mientras que el mínimo del 0,05\% se alcanzó en abril de 2020.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/DistribucionFED.png}
+    \caption{Gráfica de la distribución de los tipos de interés de la Reserva Federal. Fuente: elaboración propia.}
+    \label{fig:distribucion_fed}
+    \end{figure}
+
+    \item \textbf{Distribución de los tipos de interes BCE:}
+    Por su parte, el Banco Central Europeo mantuvo una política aún más expansiva, con una media del 0,79\% y una volatilidad mensual del 1,38\%. Su mínimo histórico de -0,50\% se mantuvo durante gran parte del período 2014-2022. Por otro lado, el máximo del 4,00\% se registró en septiembre de 2023. Todo lo mencionado es visible en la Figura \ref{fig:distribucion_bce}.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/DistribucionBCE.png}
+    \caption{Gráfica de la distribución de los tipos de interés del Banco Central Europeo. Fuente: elaboración propia.}
+    \label{fig:distribucion_bce}
+    \end{figure}
+
+    \item \textbf{Distribución de la inflación USA:}
+    Otro factor importante es la inflación estadounidense, la cual presenta una media del 2,59\%, un poco por encima del objetivo de la FED, y una volatilidad mensual del 1,85\%. El mínimo de -1,96\% se da en julio de 2009, después de la crisis, mientras que el máximo del 8,98\% en junio de 2022 corresponde al período post-COVID. La curtosis de 5,07 y el \emph{skewness} de 1,05 indican que los eventos extremos son más frecuentes de lo normal y tienden a ser al alza. Todo lo mencionado es visible en la Figura \ref{fig:distribucion_inflacion_usa}.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/DistribucionInflacionUSA.png}
+    \caption{Gráfica de la distribución de la inflación en Estados Unidos. Fuente: elaboración propia.}
+    \label{fig:distribucion_inflacion_usa}
+    \end{figure}
+
+    \item \textbf{Distribución de la inflación Europa:}
+    En Europa, la dinámica es similar pero algo más intensa, con un pico del 10,62\% en octubre de 2022, impulsado por el COVID y los conflictos bélicos. Por otro lado, el mínimo se da en enero de 2015, con un valor de -0,62\%. La elevada curtosis de 8,31 confirma que se trató de un evento extremo. La volatilidad mensual es del 1,94\%. Todo lo mencionado es visible en la Figura \ref{fig:distribucion_inflacion_eu}.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/DistribucionInflacionEU.png}
+    \caption{Gráfica de la distribución de la inflación en Europa. Fuente: elaboración propia.}
+    \label{fig:distribucion_inflacion_eu}
+    \end{figure}
+
+    \item \textbf{Distribución de la tasa de desempleo USA:}
+    La tasa de desempleo, representada en la Figura \ref{fig:distribucion_desempleo}, cuenta con una media del 5,73\% y una volatilidad mensual del 2,06\%, alcanzó su mínimo histórico del 3,4\% en diciembre de 2019, reflejando un mercado laboral bastante boyante antes de la pandemia. Sin embargo, el máximo del 14,8\% en abril de 2020, tras dicha pandemia, constituye un evento extremo reflejado en su curtosis de 4,01. Todo lo mencionado es visible en la Figura \ref{fig:distribucion_desempleo}.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/DistribucionDesempleo.png}
+    \caption{Gráfica de la distribución de la tasa de desempleo en Estados Unidos. Fuente: elaboración propia.}
+    \label{fig:distribucion_desempleo}
+    \end{figure}
+
+    \item \textbf{Distribución del bono 10Y-2Y USA:}
+    En la Figura \ref{fig:distribucion_bono} se muestra el diferencial entre el bono a 10 años y a 2 años, que presenta una media positiva del 1,01\% y una volatilidad mensual del 0,95\%, indicando una pendiente ligeramente creciente. El mínimo de -1,06\% se presenta en julio de 2022. También se registraron inversiones importantes en 2006-2007 y en 2019. El hecho de que la \emph{skewness} sea 0,122 y la curtosis esté cercana a la normal indica una distribución simétrica. .
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/DistribucionBono.png}
+    \caption{Distribución del diferencial de la curva de tipos 10Y-2Y.}
+    \label{fig:distribucion_bono}
+    \end{figure}
+
+    \item \textbf{Distribución del tipo de cambio euro/dólar:}
+    Por último, el tipo de cambio euro-dólar, que se muestra en la Figura \ref{fig:distribucion_eurdol}, presenta una media de 1,227 dólares por euro, reflejando un euro generalmente más fuerte que el dólar durante el período analizado. El valor máximo es de 1,576 y se alcanzó en abril de 2008. Por el contrario, el mínimo de 0,983 se registró en septiembre de 2022, momento en el cual el euro se equiparó con el dólar en cuanto a valor. La desviación típica de 0,129 refleja una volatilidad moderada, y la curtosis de 2,51 indica una distribución cercana a la normalidad.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/DistribucionEURDOL.png}
+    \caption{Distribución del tipo de cambio euro-dólar.}
+    \label{fig:distribucion_eurdol}
+    \end{figure}
+
+    \item \textbf{Resumen de la distribución de las variables macroeconómicas:}
+    El análisis de las distribuciones revela que las variables macroeconómicas presentan, en su mayoría, distribuciones con colas pesadas (curtosis > 3), lo que confirma la presencia de eventos extremos en los mercados financieros. Destaca especialmente el petróleo (curtosis 22,5) y el VIX (curtosis 8,69) como las variables con mayor concentración de episodios extremos. La asimetría negativa del S\&P 500 (-0,618) sugiere que las caídas abruptas son más probables que las subidas extraordinarias, un patrón común en renta variable. Estos hallazgos justifican la necesidad de utilizar modelos robustos que capturen adecuadamente estos eventos extremos en la fase de predicción.
+
+    En lo que respecta a la volatilidad, esta no es constante en el tiempo, sino que presenta picos que coinciden con períodos de crisis o eventos extraordinarios. Como se puede observar en la Figura \ref{fig:volatilidad_graf}, estos picos se concentran especialmente en 2008 (crisis financiera global), 2020 (pandemia de COVID-19) y 2022 (guerra de Ucrania e inflación descontrolada), momentos en los que la incertidumbre en los mercados se disparó. Conocer la volatilidad de las variables resulta importante, ya que aquellas variables con una mayor volatilidad (petróleo o VIX) implican que la variable presenta fluctuaciones más bruscas y eventos extremos con mayor frecuencia, lo que obliga a los modelos predictivos a ser robustos y capaces de capturar estos picos. Por el contrario, una menor volatilidad indica comportamientos más estables y predecibles.
+
+    Todos los períodos que se han mencionado a lo largo de este análisis se verán más adelante, en la parte de clustering, de forma más detallada y completa.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/VolatilidadGraf.png}
+    \caption{Evolución de la volatilidad de las variables macroeconómicas (2003-2025).}
+    \label{fig:volatilidad_graf}
+    \end{figure}
+\end{itemize}
+
+\subsubsection{Evolución temporal de las variables}
+Este análisis, permitirá conocer cómo han avanzado las variables macroeconómicas a lo largo del tiempo y comprobar la presencia de tendencias y de los eventos extremos mencionados anteriormente.
+
+\begin{itemize}
+    \item \textbf{Tipos de interés:}
+    En la Figura \ref{fig:evolucion_tipos} se puede ver la evolución de los tipos de interés de la Reserva Federal (Fed) \cite{reserva_federal} y del Banco Central Europeo (BCE) \cite{banco_central_europeo} desde diciembre de 2003 hasta diciembre de 2025.
+
+    Antes de la crisis de 2008, ambos bancos mantuvieron los tipos en niveles altos para combatir la inflación. Sin embargo, con el estallido de la crisis financiera en 2008, ambos los bajaron drásticamente, situándose cerca del 0\%.
+
+    Desde 2008 hasta 2015, la FED mantuvo los tipos en mínimos, y no fue hasta diciembre de 2015 cuando comenzó a subirlos de nuevo, alcanzando el 2,4\% en julio de 2019. Sin embargo, la llegada del COVID en 2020 volvió a llevarlos a valores cercanos al 0\% en abril de ese mismo año. Esta situación se prolongó durante dos años, hasta que en enero de 2022 la FED inició una nueva subida, alcanzando un máximo del 5,33\% en octubre de 2023. En los últimos meses, debido a ciertos conflictos bélicos y a la desaceleración económica, los tipos han experimentado una pequeña bajada.
+
+    Por el lado del BCE, la recuperación fue mucho más lenta. Tras la crisis de 2008, este banco no empezó a subir tipos hasta junio de 2022. De hecho, entre 2008 y 2022, los tipos europeos sufrieron una bajada continua, llegando a alcanzar un mínimo histórico del -0,50\% en octubre de 2019 (tipos negativos). Sin embargo, al igual que la FED, a partir de 2022 los tipos subieron con fuerza, alcanzando un máximo del 4% en septiembre de 2023. Desde entonces se han mantenido bastante estables, aunque en los últimos meses también han registrado una ligera bajada por los mismos motivos que en Estados Unidos.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/EvolucionTipos.png}
+    \caption{Evolución de los tipos de interés de la Reserva Federal y del Banco Central Europeo (2003-2025). Fuente: elaboración propia.}
+    \label{fig:evolucion_tipos}
+    \end{figure}
+
+    \item \textbf{Inflación:}
+    En la Figura \ref{fig:evolucion_inflacion} se puede ver la evolución de la inflación en Estados Unidos y en Europa desde diciembre de 2003 hasta diciembre de 2025.
+
+    Se puede observar que antes de la crisis de 2008, la inflación se mantuvo controlada en torno al 2-3\% en ambas regiones. Sin embargo, con la crisis financiera de 2008, la inflación se desplomó. Estados Unidos llegó a tener deflación (inflación negativa) en 2009, mientras que Europa también sufrió esa deflación, pero en menor medida, quedando cerca del 0\%.
+
+    A finales de 2009, ambas regiones empezaron a recuperarse y hasta 2015 mantuvieron una inflación en torno al 2\%. Sin embargo, a inicios de 2015, tanto Europa como Estados Unidos sufrieron una nueva deflación debido a la caída del precio del petróleo.
+
+    Entre 2015 y 2017, la inflación volvió a subir, llegando de nuevo cerca del 2\%. Estos valores se mantuvieron durante dos años, hasta que en 2019, con el COVID, volvió a bajar, situándose de nuevo en valores negativos en 2020.
+
+    Sin embargo, todo cambió en 2021. Después del COVID, la inflación se disparó como no se había visto en décadas. Estados Unidos alcanzó su máximo del 9\% en junio de 2022, mientras que Europa llegó al 10,6\% en octubre de ese mismo año, superando a Estados Unidos por primera vez en todo el período.
+
+    Desde 2023 en adelante, la inflación ha ido bajando gradualmente, alcanzando de nuevo valores cercanos al 2\% en 2024, unos valores que se han mantenido hasta 2025.
+
+    En esta gráfica se puede ver lo mencionado anteriormente: los eventos extremos son frecuentes y tienden a ser al alza.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/EvolucionInflacion.png}
+    \caption{Evolución de la inflación en Estados Unidos y Europa (2003-2025). Fuente: elaboración propia.}
+    \label{fig:evolucion_inflacion}
+    \end{figure}
+
+    \item \textbf{S\&P 500 vs VIX:}
+    En la Figura \ref{fig:sp_vs_vix} se compara la evolución del S\&P 500 con el VIX.
+
+    Lo primero que llama la atención es la relación inversa entre ambos, es decir, cuando el VIX se dispara, el S\&P 500 suele caer, y viceversa.
+
+    El mayor pico del VIX se vivió en 2008, con la crisis financiera, alcanzando casi los 60 puntos en octubre, siendo este su máximo histórico. Por otro lado, el S\&P 500 llegó a caer más de un 40\% desde sus máximos en 2008-2009.
+
+    Entre 2009 y 2019 se vivió una larga etapa de tranquilidad. El VIX se mantuvo en niveles bajos (entre 15 y 20), exceptuando algunos picos en 2010, 2011 y 2015. Por otro lado, el S\&P 500 no paró de subir durante una década, multiplicándose por cuatro su valor desde los mínimos de 2009.
+
+    En 2020, con el COVID, el VIX volvió a dispararse hasta los 53,4 puntos. Esto conllevó la caída del S\&P 500; sin embargo, no fue muy drástica y apenas perdió un 5\%.
+
+    Entre 2021 y 2023, el VIX se quedó en niveles medios-altos (20-25), reflejando la incertidumbre por la inflación, la guerra y la subida de tipos. El S\&P 500 se estancó, sin una tendencia clara, bajando y subiendo constantemente.
+
+    Finalmente, en 2024 y 2025, el VIX recuperó niveles bajos y el S\&P 500 recuperó una tendencia al alza, subiendo de nuevo su valor.
+
+    En la gráfica se puede apreciar el alto valor de la curtosis de ambas variables.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/SPVSVIX.png}
+    \caption{Evolución del S\&P 500 y del VIX (2003-2025). Fuente: elaboración propia.}
+    \label{fig:sp_vs_vix}
+    \end{figure}
+
+    \item \textbf{Oro vs Petróleo:}
+    En la Figura \ref{fig:oro_vs_petroleo} se puede ver cómo han evolucionado los retornos del petróleo y del oro desde diciembre de 2003 hasta diciembre de 2025. Esto permite comparar su comportamiento a largo plazo.
+
+    El principal evento a destacar es la crisis de 2008, cuando ambos cayeron, aunque el petróleo sufrió un desplome mucho más fuerte, cayendo hasta un 60\%, mientras que el oro resistió mucho mejor, cayendo solo un 20\% debido a su cualidad de activo refugio.
+
+    Entre 2009 y 2011, el oro siguió subiendo de forma continua. Por otro lado, el petróleo también se recuperó, pero sin llegar a los niveles de 2008.
+
+    Entre 2012 y 2019, el oro se tomó un respiro y bajó. El petróleo, en cambio, sufrió dos caídas adicionales: una en 2014-2015 y otra en 2018.
+
+    En 2020 llegó el COVID y, con ello, el precio del petróleo cayó drásticamente. El oro, por el contrario, creció bastante, haciendo así que la diferencia entre ambos fuese enorme.
+
+    Entre 2021 y 2025, se puede observar cómo los retornos del oro han ido creciendo de forma continua, mientras que los del petróleo han sido un poco más estacionarios.
+
+    En la gráfica se puede apreciar la alta volatilidad y curtosis del petróleo, así como la alta curtosis del oro, aunque no tan alta como la del petróleo.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/OroVSPetroleo.png}
+    \caption{Evolución de los retornos del oro y del petróleo (2003-2025). Fuente: elaboración propia.}
+    \label{fig:oro_vs_petroleo}
+    \end{figure}
+
+    \item \textbf{Desempleo vs Curva de tipos 10Y-2Y:}
+    En la Figura \ref{fig:desempleo_tipos} se muestra la comparación entre la Curva de Tipos 10Y-2Y y el desempleo.
+
+    Se puede observar cómo, en la gráfica, la curva se encontraba en valores negativos (curva invertida) durante gran parte de los años 2006 y 2007 y, tal y como se ha visto anteriormente, en 2008 se produjo una gran crisis financiera. Este suceso coincide con el aumento de la tasa de paro, que durante dicha crisis alcanzó valores muy altos, llegando hasta el 10\%.
+
+    Después de la crisis, entre 2008 y 2009, la curva tomó valores positivos debido a la recuperación del mercado.
+
+    Entre 2010 y 2018, la curva se mantuvo positiva todo el tiempo, hasta que en 2019 volvió a invertirse brevemente, anticipando así la recesión que se produciría por el COVID. Del mismo modo, entre 2010 y 2018, la tasa de desempleo estuvo en constante bajada; sin embargo, al igual que la curva de tipos, en 2019 con el COVID, la tasa de desempleo sufrió un fuerte aumento, alcanzando máximos históricos cercanos al 15\%.
+    Después del COVID, entre 2020 y 2021, la curva se puso muy positiva, pero en 2022 volvió a valores negativos, esta vez de forma profunda y duradera. La curva se mantuvo en terreno negativo durante todo 2023, con un mínimo de -1,06\% en julio de 2022. Sin embargo, a diferencia de situaciones anteriores, pese a encontrarse la curva en valores negativos, la tasa de desempleo no siguió creciendo; de hecho, bajó exponencialmente hasta valores cercanos al 5\%.
+
+    Finalmente, en 2024 y 2025, la curva volvió a terreno positivo y la tasa de desempleo se estabilizó, con valores muy constantes durante estos años.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/DesemploTipos.png}
+    \caption{Evolución de la curva de tipos 10Y-2Y y la tasa de desempleo en Estados Unidos (2003-2025). Fuente: elaboración propia.}
+    \label{fig:desempleo_tipos}
+    \end{figure}
+\end{itemize}
+
+\subsubsection{Detección de datos atípicos}
+
+A continuación, en la Figura \ref{fig:boxplots} se visualizan los diagramas de \emph{boxplots}. En ellos se detectan algunos outliers. Estos outliers no se eliminan, ya que en el ámbito financiero representan información valiosa sobre crisis y eventos extraordinarios que el modelo debe aprender a manejar.
+
+El S\&P 500 presenta 6 outliers inferiores que representan las caídas en 2008 y 2020, y 3 outliers superiores, como el de abril de 2020. El VIX destaca con 12 outliers superiores, reflejando picos de pánico en 2008, 2020 y 2022-2023. El petróleo muestra 6 outliers inferiores, donde cabe destacar la caída del -40,8\% en marzo de 2020, y 2 superiores, como el rebote del 88,4\% en mayo de 2020. El oro presenta 4 outliers inferiores y 3 superiores.
+
+La inflación es la variable con más outliers. En el caso de Estados Unidos, presenta 17 outliers superiores, siendo el más destacado el pico del 9\% en 2022. Por otro lado, Europa cuenta con 22 outliers superiores, destacando el pico del 10,6\% en octubre de 2022. En cuanto al desempleo, este tiene 3 outliers superiores debidos a la pandemia. Los tipos de interés de la FED y del BCE, la curva 10Y2Y y el tipo de cambio no presentan outliers.
+
+En resumen, tal y como era de esperar, los outliers se concentran en la crisis financiera, la pandemia y el episodio inflacionario, afectando principalmente a la inflación, el VIX y el petróleo. Estos valores extremos se mantienen en el dataset para que los modelos de Machine Learning aprendan a manejar situaciones extremas.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{imagenes/Boxplots.png}
+\caption{Boxplots de las variables macroeconómicas. Fuente: elaboración propia.}
+\label{fig:boxplots}
+\end{figure}
+
+\subsubsection{Análisis de autocorrelación}
+Para finalizar con el análisis univariante, se realiza un análisis de autocorrelación. Este permite entender la memoria temporal de cada variable, es decir, cómo influyen sus valores pasados en los presentes. Este paso resulta muy importante para la fase de modelado, ya que indica qué variables pueden requerir la inclusión de sus retardos como predictores y cuáles son buenas candidatas para modelos con memoria larga, como las redes LSTM.
+
+En las Figuras \ref{fig:autocorr_a}, \ref{fig:autocorr_b} y \ref{fig:autocorr_c} se muestran las funciones de autocorrelación para las variables macroeconómicas y para el rendimiento de Apple. En estas figuras se aprecia cómo, tanto en los retornos del S\&P 500 como en los del petróleo y del oro, solo el primer lag supera las bandas de significancia (líneas azules), mientras que el resto de los lags se mantienen dentro del intervalo de confianza. Esto indica que los retornos pasados tienen muy poca influencia sobre los retornos actuales. Para el modelo, esto sugiere que con incluir el valor actual de las variables será suficiente.
+
+El VIX, por el contrario, muestra varios lags que superan el intervalo de confianza. Esto sugiere que incluir varios de sus valores pasados (lags 1, 2 y 3) puede ayudar a capturar mejor la dinámica del riesgo en el mercado.
+
+Por otro lado, los tipos de interés de la Reserva Federal y del Banco Central Europeo presentan una correlación muy alta y persistente, con múltiples lags significativos y una caída extremadamente lenta de los coeficientes. Es por ello que los tipos de interés son candidatos ideales para modelos como las redes LSTM.
+
+En lo que respecta a la inflación, tanto en Estados Unidos como en Europa, muestra un comportamiento similar al de los tipos de interés, con alta persistencia y numerosos lags significativos. Al igual que los tipos, la inflación es una variable con memoria larga que se beneficiará de modelos capaces de capturar sus efectos retardados.
+
+Tanto el desempleo como la Curva de Tipos 10Y-2Y y el tipo de cambio euro-dólar presentan una autocorrelación muy alta y persistente.
+
+Finalmente, el rendimiento de Apple presenta baja autocorrelación, lo que indica que los valores pasados no influyen significativamente en el rendimiento futuro. No obstante, en modelos no lineales como Random Forest o LSTM, estos lags pueden seguir siendo útiles al interactuar con otras variables.
+
+En resumen, el análisis de autocorrelación permite clasificar las variables según su memoria temporal. Los retornos financieros presentan baja memoria, por lo que bastará con sus valores actuales. El VIX tiene memoria media, por lo que podría ser de utilidad añadir varios lags recientes. Lo mismo sucede con los tipos de interés, la inflación, el desempleo y la curva de tipos. Toda esta clasificación será utilizada en la fase de modelado para seleccionar los retardos adecuados para cada variable predictora, justificar el uso de LSTM para las variables con alta persistencia y optimizar la dimensionalidad del modelo, evitando lags innecesarios en variables con baja memoria.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{imagenes/AutocorrA.png}
+\caption{Gráficas de autocorrelación del VIX y los retornos del S\&P 500, oro y petróleo. Fuente: elaboración propia.}
+\label{fig:autocorr_a}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{imagenes/AutocorrB.png}
+\caption{Gráficas de autocorrelación para tipos de interés e inflación. Fuente: elaboración propia.}
+\label{fig:autocorr_b}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{imagenes/AutocorrC.png}
+\caption{Gráficas de autocorrelación para desempleo, curva de tipos y rendimiento de Apple. Fuente: elaboración propia.}
+\label{fig:autocorr_c}
+\end{figure}
+
+\subsection{Análisis multivariante}
+En está sección, se realiza un análisis multivariante de las variables seleccionadas. Este análisis tiene como objetivo entender las relaciones entre las variables, identificar posibles redundancias y reducir la dimensionalidad del dataset para mejorar la eficiencia de los modelos predictivos. Para ello, se aplicarán técnicas como el análisis de correlación, el análisis de componentes principales (PCA) y el análisis de clusters. 
+
+\subsubsection{Correlación entre variables}
+Comenzando con la correlación, en la Figura \ref{fig:matriz_corr} se puede ver la matriz de correlación entre las variables. Se distinguen dos tonalidades: un azul oscuro que indica una correlación de +1 (las variables se comportan igual) y un rojo oscuro que indica una correlación inversa de -1 (se comportan de forma opuesta: si una sube, la otra baja). Los valores más cercanos al blanco indican que las variables tienen correlaciones cercanas a 0, por lo que podría decirse que no están correlacionadas.
+
+En dicha matriz se puede observar que las correlaciones más fuertes son entre la inflación de Estados Unidos y la de Europa, con un valor de 0,86, y entre los tipos de la FED y los del BCE, con un valor de 0,81. Esto se puede apreciar en las grñaficas presentadas en la evolución temporal de cada una de las variables, donde se puede ver esta correlación positiva. Por otro lado, destaca la correlación inversa entre el desempleo y la curva 10Y2Y (-0,74), esto se puede comprobar también, fijandose en la gráfica de la evolución temporal entre la curva y el desempleo, cuando una sube la otra baja.
+
+Realizar este análisis de correlaciones resulta muy importante, ya que en caso de haber obtenido valores muy altos (>0,9), se habría planteado eliminar ciertas variables para no introducir ruido al entrenar los modelos predictivos. Más adelante, en la sección de selección de variables, se determinará si estas variables se mantienen o se eliminan. En el caso de que se mantengan todas las variables, sería por dos razones, en primer lugar, los modelos de Machine Learning que se emplearán (Random Forest, Gradient Boosting y LSTM) son robustos a la multicolinealidad, a diferencia de los modelos lineales tradicionales. En segundo lugar, mantener ambas variables permite capturar posibles asimetrías entre regiones, como el hecho de que en 2022 la inflación europea superara a la americana, algo que no recogería una variable única.
+
+No obstante, se tendrá en cuenta esta alta correlación en la fase de interpretación de los modelos, especialmente al analizar la importancia de las variables.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{imagenes/MatrizCorr.png}
+\caption{Matriz de correlación entre las variables macroeconómicas. Fuente: elaboración propia.}
+\label{fig:matriz_corr}
+\end{figure}
+
+\subsubsection{Correlación con el target}
+Para justificar el uso de los modelos elegidos, se ha llevado acabo un analisis de correlación entre  las variables macroeconómicas y el target.
+
+En la Figura \ref{fig:corr_target} se pueden ver las correlaciones entre las variables macroeconómicas y el rendimiento del activo utilizado para las pruebas, que en este caso es Apple. Lo primero que llama la atención es que ninguna correlación supera 0,12 en valor absoluto, lo que indica que la relación entre estas variables y Apple no es lineal, lo cual no es negativo. Más adelante en esta sección se verá el motivo.
+
+La variable con mayor correlación positiva es el petróleo, con un valor de 0,12, seguida del S\&P 500, con 0,10. En el lado negativo, la inflación europea, con un valor de -0,08, y la inflación estadounidense, con -0,06, son las que presentan correlaciones más negativas. Por último, destaca la correlación casi nula del VIX (-0,02) con Apple, lo que se debe a que los picos de volatilidad son episódicos y no lineales.
+
+El hecho de obtener correlaciones tan bajas indica que un modelo lineal simple no será suficiente para capturar la relación entre las variables macroeconómicas y Apple. Será necesario recurrir a modelos no lineales como Random Forest, Gradient Boosting o LSTM, que puedan capturar relaciones más complejas y efectos retardados.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{imagenes/CorrelacionTarget.png}
+\caption{Correlaciones entre las variables macroeconómicas y el rendimiento de Apple. Fuente: elaboración propia.}
+\label{fig:corr_target}
+\end{figure}
+
+\subsubsection{Análisis de componentes principales (PCA)}
+A continuación, se realiza un análisis de componentes principales (PCA) con el objetivo de reducir la dimensionalidad del conjunto de datos, identificando un conjunto de variables no correlacionadas que capturen la mayor parte de la variabilidad del sistema. Los componentes principales se ordenan de mayor a menor según la cantidad de varianza que explican. El primer componente principal (PC1) es la combinación lineal de las variables originales que representa la máxima varianza posible. El PC2, que no está correlacionado con el PC1, captura la máxima varianza restante, y así sucesivamente. De esta forma, es posible determinar cuántas dimensiones son necesarias para resumir la información contenida en las variables originales.
+
+En la Figura \ref{fig:pca_graf} se muestra la varianza explicada por cada componente principal. Los primeros cuatro componentes explican el 73,8\% de la varianza total: PC1 representa un 33,4\%, PC2 un 16,4\%, PC3 un 13,1\% y PC4 un 10,9\%. Esto indica que la información contenida en las once variables macroeconómicas originales puede resumirse en un número reducido de dimensiones. A partir del quinto componente, la varianza explicada por cada uno es inferior al 9\%, lo que confirma que los cuatro primeros componentes capturan la mayor parte de la estructura del sistema.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{imagenes/PCAGraf.png}
+\caption{Varianza explicada por cada componente principal. Fuente: elaboración propia.}
+\label{fig:pca_graf}
+\end{figure}
+
+Las Figuras \ref{fig:pca_contribucion_pc1}, \ref{fig:pca_contribucion_pc2}, \ref{fig:pca_contribucion_pc3} y \ref{fig:pca_contribucion_pc4} muestran la contribución de cada variable a los cuatro primeros componentes principales, lo que permite interpretar su significado económico.
+
+\begin{itemize}
+    \item \textbf{PC1:} 
+    Comenzando con el PC1, este está definido por la curva de tipos (21\%), los tipos de la FED (18,5\%) y el desempleo (17,8\%). En este componente, los valores altos indican un entorno de tipos elevados, curva normal y desempleo controlado, mientras que los valores bajos indican tipos bajos o recesiones cercanas.El primer componente principal (PC1) está fuertemente influenciado por la inflación (tanto en Estados Unidos como en Europa), los tipos de interés (FED y BCE) y el desempleo. Esto sugiere que PC1 representa un factor macroeconómico general que captura la dinámica de la política monetaria y las condiciones económicas. Un aumento en PC1 podría interpretarse como un entorno de alta inflación, tipos de interés elevados y mayor desempleo, lo que suele ser negativo para los activos financieros.
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/GrafPC1.png}
+    \caption{Contribución de las variables al primer componente principal (PC1). Fuente: elaboración propia.}
+    \label{fig:pca_contribucion_pc1}
+    \end{figure}
+
+    \item \textbf{PC2:} 
+    En cuanto al PC2, este se encuentra dominado por el VIX (32\%) y el S\&P 500 (29,5\%), que juntos aportan más del 60\% del total. Este componente captura la alternancia entre períodos de expansión (S\&P 500 alto, VIX bajo) y crisis (S\&P 500 bajo, VIX alto). Cuando el PC1 es positivo, el mercado se encuentra en alza y con baja volatilidad, mientras que cuando es negativo, se está en épocas de recesión.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/GrafPC2.png}
+    \caption{Contribución de las variables al segundo componente principal (PC2). Fuente: elaboración propia.}
+    \label{fig:pca_contribucion_pc2}
+    \end{figure}
+
+    \item \textbf{PC3:} 
+    En el PC3 dominan los tipos del BCE (33\%), la curva de tipos (30,5\%) y el oro (15,5\%). Este componente refleja la política monetaria europea y los activos refugio. Cuando este PC se encuentra alto, puede suponer una crisis cercana.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/GrafPC3.png}
+    \caption{Contribución de las variables al tercer componente principal (PC3). Fuente: elaboración propia.}
+    \label{fig:pca_contribucion_pc3}
+    \end{figure}
+
+    \item \textbf{PC4:} 
+    Finalmente, el PC4 está formado por la inflación de Estados Unidos (28\%), el petróleo (27,5\%) y la inflación europea (25\%). Este componente define básicamente períodos inflacionarios, en los que los precios se disparan. Un ejemplo cercano podría ser el año 2022.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagenes/GrafPC4.png}
+    \caption{Contribución de las variables al cuarto componente principal (PC4). Fuente: elaboración propia.}
+    \label{fig:pca_contribucion_pc4}
+    \end{figure}
+\end{itemize}
+Tras este análisis de PCA, se confirma que el sistema macroeconómico no está definido por una sola variable, sino que responde a varias dimensiones independientes como las vistas anteriormente. En la fase de modelado se mantendrán las variables originales en lugar de los componentes principales. Sin embargo, el análisis realizado será de gran utilidad a la hora de seleccionar variables y de interpretar los modelos.
+
+\subsubsection{Análisis de clusters}
+Para finalizar el análisis multivariante, se realiza un análisis de clusters con el objetivo de identificar grupos de períodos temporales que compartan características macroeconómicas similares. Este análisis permite segmentar el dataset en diferentes ciclos económicos, lo que resulta útil para entender mejor la dinámica del sistema y para evaluar el comportamiento de los modelos predictivos en distintos contextos.
+
+En la Figura \ref{fig:clusters_graf} se muestra la segmentación temporal de los seis ciclos económicos identificados entre 2003 y 2025, así como la evolución del activo Apple a lo largo de los mismos. Cada color representa un ciclo diferente, permitiendo observar cuándo comienza y termina cada ciclo, así como su duración.
+
+El primer ciclo, que abarca desde 2003 hasta 2007, corresponde al período de precrisis, caracterizado por un fuerte crecimiento económico. El siguiente ciclo es la crisis financiera de 2008, que abarca desde 2008 hasta 2009 y está marcado por la recesión global y la destrucción masiva de empleo. A continuación, se identifica el período de recuperación de la crisis, un ciclo largo que va desde 2010 hasta 2013 y que refleja las consecuencias de la crisis financiera experimentada anteriormente.
+
+A partir de 2014, la economía comienza a recuperarse y se inicia un periodo de crecimiento económico que representa la fase expansiva más prolongada, con tasas de crecimiento muy altas, tipos de interés en mínimos históricos y una racha alcista prolongada en los mercados. Sin embargo, se pueden encontrar picos en variables como el VIX, provocados por la incertidumbre aún existente. Pese a este crecimiento, en 2019 surge el COVID-19, provocando un parón y una mini crisis que perduró hasta 2021. Este ciclo captura el impacto de la pandemia en la economía.
+
+Finalmente, el período de recuperación y estabilización, que abarca desde 2022 hasta 2025, se caracteriza por la recuperación post-pandemia, con una fuerte inflación y, en consecuencia, una subida muy pronunciada de los tipos de interés durante los primeros años. No obstante, con el paso del tiempo, la situación se estabilizó.
+
+Cabe destacar que, a pesar de la crisis sanitaria y económica provocada por la pandemia, Apple alcanzó máximos históricos en su cotización durante el período 2020-2021. Este comportamiento puede explicarse por varios factores: la percepción de las grandes tecnológicas como activos refugio en momentos de incertidumbre, los tipos de interés en mínimos históricos que favorecieron la valoración de empresas de crecimiento, los estímulos fiscales masivos que incrementaron la liquidez en los mercados, el cambio en los hábitos de consumo hacia la tecnología (provocado por el teletrabajo y la educación online) y los sólidos resultados financieros de la compañía durante la pandemia.
+
+Por último, esta segmentación en seis ciclos será utilizada en la fase de modelado para evaluar el comportamiento de los modelos predictivos en diferentes contextos económicos, permitiendo analizar su robustez tanto en períodos de expansión como en situaciones de crisis.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{imagenes/ClustersGraf.png}
+\caption{Segmentación temporal de los seis ciclos económicos (2003-2025) y evolución de Apple durante cada ciclo. Fuente: elaboración propia.}
+\label{fig:clusters_graf}
+\end{figure}
+
+Para concluir con el clustering, se muestra la importancia de cada variable en cada uno de los ciclos. En las Figuras \ref{fig:importancia1} y \ref{fig:importancia2} se pueden ver los valores medios de las principales variables macroeconómicas para cada uno de los seis ciclos mencionados anteriormente. Este análisis permite identificar patrones claros que caracterizan cada fase del ciclo económico.
+
+Se puede observar cómo en períodos de expansión y auge, como los de 2003-2007 y 2014-2019, el crecimiento del S\&P 500 es elevado, la volatilidad es baja, la inflación está controlada, los tipos de interés se encuentran en niveles normales o bajos y el desempleo está en descenso. Estas variables reflejan una economía sana y próspera.
+
+Por otro lado, el período de la crisis de 2008-2009 se caracteriza por un VIX muy alto, alcanzando valores por encima de 40. A su vez, el S\&P 500 cae con fuerza, la inflación se desploma, los tipos de interés se reducen a cero y el desempleo comienza a aumentar. A diferencia del período anterior, este muestra una economía debilitada y cercana al colapso.
+
+Entre 2010 y 2013, en el período de recuperación de la crisis, el VIX se mantuvo elevado, el S\&P 500 se recuperó gradualmente y la inflación se mantuvo en valores muy bajos. Por otro lado, los tipos se mantenían en mínimos; sin embargo, el desempleo alcanzó su punto máximo en 2010. Estos datos reflejan un escenario con una economía aún bastante débil, pero con signos de mejoría.
+
+Durante el ciclo de la crisis por el COVID-19, se pueden encontrar similitudes con la crisis de 2008, ya que ambos períodos se caracterizan por una volatilidad muy alta. No obstante, durante el COVID la recuperación fue bastante más rápida: los tipos volvieron a cero y el S\&P 500 se recuperó significativamente, alcanzando nuevos máximos en menos de un año.
+
+Por último, en el período de recuperación y estabilización, se presenta un patrón único: la inflación alcanza máximos históricos, provocando que los tipos de interés también alcancen máximos. Debido a esto, la curva de tipos se invierte profundamente, anticipando una posible recesión. A pesar de ello, el S\&P 500 muestra resistencia, creciendo pese a las dificultades económicas iniciales.
+
+Tras este análisis, se confirma que cada ciclo está marcado por una serie de características. Los períodos de expansión se asocian con baja volatilidad y crecimiento sostenido; las crisis presentan picos de volatilidad y bajadas de los tipos de interés; y los períodos de alta inflación suelen conllevar subidas de tipos. Estos datos serán de gran utilidad en la fase de modelado a la hora de realizar la simulación de escenarios.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{imagenes/Importancia1.png}
+\caption{Valores medios de las variables macroeconómicas por ciclo económico (parte 1). Fuente: elaboración propia.}
+\label{fig:importancia1}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{imagenes/Importancia2.png}
+\caption{Valores medios de las variables macroeconómicas por ciclo económico (parte 2). Fuente: elaboración propia.}
+\label{fig:importancia2}
+\end{figure}
+
+
+\section{Selección de variables y dataset final}
+Una vez completado el análisis exploratorio de datos, el siguiente paso fundamental es la selección de las variables que conformarán el dataset definitivo para el entrenamiento de los modelos predictivos. El objetivo es maximizar la información relevante, eliminar redundancias y reducir la dimensionalidad del problema, mejorando así la eficiencia computacional y la capacidad de generalización de los modelos.
+
+Cabe destacar que este proceso de selección se ha ejemplificado utilizando Apple como activo de estudio. En una aplicación real de esta metodología a otro fondo de inversión o activo financiero, los resultados podrían variar, ya que la relación entre las variables macroeconómicas y el target depende del activo concreto analizado. Por esta razón, se ha implementado un proceso automatizado en Python que permite replicar la selección de variables de forma sistemática para cualquier activo o fondo de inversión, garantizando así la reproducibilidad y escalabilidad del método.
+
+\subsection{Criterios de selección}
+
+La estrategia de selección de variables se ha basado en dos criterios diferentes:
+
+\begin{enumerate}
+    \item \textbf{Información mutua (Mutual Information - MI)}: Mide la dependencia estadística entre cada variable predictora y el rendimiento del target. Esta propiedad es muy importante en el ámbito financiero, ya que las relaciones entre variables macroeconómicas y los rendimientos de los activos suelen ser complejas.
+    
+    \item \textbf{Correlación entre predictores}: Una vez seleccionadas las variables con mayor capacidad predictiva individual, se analiza la matriz de correlación para detectar posibles redundancias. Si dos variables presentan una correlación muy alta (superior a 0,80), se considera que contienen la misma información, por lo que se elimina la menos relevante según su información mutua.
+\end{enumerate}
+
+\subsection{Proceso automatizado de selección}
+
+Para garantizar la reproducibilidad y objetividad del proceso, se ha implementado una función en Python que automatiza la selección de variables siguiendo los criterios anteriores. La función, denominada \texttt{seleccion\_variables}, recibe como entrada el dataset completo y devuelve el dataset con las variables seleccionadas.
+
+El algoritmo sigue los siguientes pasos:
+
+\begin{enumerate}
+    \item \textbf{Cálculo de la información mutua}: Se calcula la MI entre cada variable predictora y el target utilizando la función \texttt{mutual\_info\_regression} de scikit-learn.
+    
+    \item \textbf{Selección por relevancia}: Se mantienen aquellas variables con MI superior a un umbral establecido.
+    
+    \item \textbf{Eliminación de redundancia}: Sobre las variables seleccionadas, se calcula la matriz de correlación. Se ordenan las variables por MI descendente y se recorre la lista, eliminando aquellas que presentan una correlación superior a 0,80 con alguna variable ya seleccionada.
+    
+    \item \textbf{Mantenimiento de variables forzadas}: Adicionalmente, se ha definido un conjunto de variables macroeconómicas que se mantienen independientemente de su valor de MI, debido a su relevancia en el ámbito financiero. Dichas variables son el rendimiento del S\&P 500,  el índice de volatilidad VIX, los tipos de interés de la Reserva Federal, la curva de tipos 10Y-2Y y la inflación de Estados Unidos.
+\end{enumerate}
+
+\subsection{Resultados de la selección}
+
+La Figura \ref{fig:graf_mi} muestra los valores de información mutua obtenidos para cada variable predictora con respecto al rendimiento de Apple.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{imagenes/GrafMI.png}
+\caption{Información mutua entre las variables predictoras y el rendimiento de Apple.}
+\label{fig:graf_mi}
+\end{figure}
+
+Como se puede observar en la figura, las variables con mayor capacidad predictiva individual son las medias móviles y el momentum, seguidas de los tipos de interés de la Reserva Federal, el desempleo y la inflación estadounidense. Por el contrario, el VIX y el rendimiento del S\&P 500 presentan los valores más bajos de información mutua, aunque se mantienen por su relevancia conceptual como variables forzadas.
+
+\subsection{Dataset final}
+
+Tras aplicar el proceso de selección, el dataset final está compuesto por las siguientes variables:
+
+\begin{table}[H]
+\centering
+\caption{Variables del dataset final}
+\begin{tabular}{|p{5cm}|p{9.5cm}|}
+\hline
+\textbf{Variable} & \textbf{Descripción} \\
+\hline
+sp500\_return & Retorno mensual del S\&P 500 \\
+\hline
+vix & Índice de volatilidad VIX \\
+\hline
+petroleo\_return & Retorno mensual del petróleo \\
+\hline
+oro\_return & Retorno mensual del oro \\
+\hline
+tipos\_fed & Tipos de interés de la Reserva Federal \\
+\hline
+tipos\_ecb & Tipos de interés del Banco Central Europeo \\
+\hline
+inflacion\_usa & Inflación de Estados Unidos (IPC interanual) \\
+\hline
+inflation\_eu & Inflación de la eurozona (IPC interanual) \\
+\hline
+desempleo & Tasa de desempleo en Estados Unidos \\
+\hline
+curva10Y2Y & Diferencial bono 10 años - 2 años \\
+\hline
+eurusd & Tipo de cambio euro/dólar \\
+\hline
+media\_movil\_3m & Media móvil a 3 meses del rendimiento de Apple \\
+\hline
+media\_movil\_6m & Media móvil a 6 meses del rendimiento de Apple \\
+\hline
+volatilidad\_3m & Volatilidad móvil a 3 meses del rendimiento de Apple \\
+\hline
+momentum\_3m & Momentum a 3 meses del rendimiento de Apple \\
+\hline
+\end{tabular}
+\label{tab:dataset_final}
+\end{table}
+
+Este dataset final, que consta de 15 variables predictoras y la variable target, será el utilizado para el entrenamiento y evaluación de los modelos Random Forest, Gradient Boosting y LSTM en los capítulos siguientes.
+
+

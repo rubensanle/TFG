@@ -44,10 +44,10 @@
   <internal package="biblatex" priority="9" active="0">
     <generic>latex</generic>
     <provides type="dynamic">
-      <file>PlanDeTrabajo.bcf</file>
+      <file>MemoriaIntermeda.bcf</file>
     </provides>
     <requires type="dynamic">
-      <file>PlanDeTrabajo.bbl</file>
+      <file>MemoriaIntermeda.bbl</file>
     </requires>
     <requires type="static">
       <file>blx-dm.def</file>
@@ -68,19 +68,19 @@
     <generic>biber</generic>
     <cmdline>
       <binary>biber</binary>
-      <infile>PlanDeTrabajo</infile>
+      <infile>MemoriaIntermeda</infile>
     </cmdline>
     <input>
-      <file>PlanDeTrabajo.bcf</file>
+      <file>MemoriaIntermeda.bcf</file>
     </input>
     <output>
-      <file>PlanDeTrabajo.bbl</file>
+      <file>MemoriaIntermeda.bbl</file>
     </output>
     <provides type="dynamic">
-      <file>PlanDeTrabajo.bbl</file>
+      <file>MemoriaIntermeda.bbl</file>
     </provides>
     <requires type="dynamic">
-      <file>PlanDeTrabajo.bcf</file>
+      <file>MemoriaIntermeda.bcf</file>
     </requires>
     <requires type="editable">
       <file>secciones/biblio.bib</file>
