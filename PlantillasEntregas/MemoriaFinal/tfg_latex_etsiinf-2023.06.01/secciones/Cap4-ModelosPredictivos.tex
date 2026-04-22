@@ -1,2 +1,149 @@
-\chapter{Modelos predictivos}
-Por hacer
+\chapter{Entrenamiento y validación de los modelos predictivos}
+En este capítulo se describe la implementación, el entrenamiento y validación de los modelos predictivos seleccionados para este trabajo, dichos modelos son Random Forest, Gradient Boosting y LSTM. Para tal entrenamiento, se partirá de los datasets optimizados obtenidos en el Capítulo 3 (Se recuerda que había 2 datasets, uno de ellos para los modelos ML, con retardos en variables macroeconómicas y el otro para los modelos DL, sin retardos), se detalla la partición temporal de los datos, la configuración de hiperparámetros, el entrenamiento de los modelos y la evaluación de los mismos. En lo que respecta a los fundamentos teóricos de cada modelo, estos ya se presentaron en el Capítulo 2, por lo que aquí se abordará tan solo su aplicación práctica.
+
+\section{División de los datos en entrenamiento, validación y prueba}
+
+Una vez construidos los dos datasets, el siguiente paso es dividir los datos en tres subconjuntos, entrenamiento, validación y prueba. Dado que se trata de una serie temporal, la división debe de respetar el orden cronológico.
+
+\subsection{Criterios de división}
+
+Para dicha división, se ha optado por un reparto del 70\% de los datos para entrenamiento, 15\% para validación y 15\% para prueba. Esta distribución permite disponer de un número un amplio número de observaciones para el entrenamiento (212 meses), al igual que se tienen conjuntos de validación y prueba con tamaños significativos (26 meses cada uno). De este modo, se garantiza que los modelos tengan suficiente información para aprender patrones en los datos, al mismo tiempo que se dispone de conjuntos adecuados para ajustar hiperparámetros y evaluar el rendimiento final.
+
+La división de los datos se ha implementado mediante una función en Python que respeta el orden secuencial de los datos, dicha función es \textit{division\_conjuntos}
+
+\begin{lstlisting}[language=Python, caption=Función para la partición temporal de los datos, label=lst:split]
+def division_conjuntos(dataframe, tr_size=0.7, vl_size=0.15, ts_size=0.15):
+    N = dataframe.shape[0]
+    Ntrain = int(tr_size * N)
+    Nval = int(vl_size * N)
+    
+    train = dataframe.iloc[:Ntrain]
+    val = dataframe.iloc[Ntrain:Ntrain+Nval]
+    test = dataframe.iloc[Ntrain+Nval:]
+    
+    return train, val, test
+\end{lstlisting}
+
+\subsection{Aplicación a los datasets de ML y DL}
+
+La función detallada anteriormente, se ha aplicado sobre ambos datasets, ya que tienen exactamente el mismo número de filas y las mismas fechas. De este modo, las divisiones temporales son idénticos para ambos conjuntos, lo que garantiza que la posterior comparación entre modelos sea justa y coherente.
+
+\subsection{Funcionalidad de cada conjunto}
+
+Como ya se ha comentado, la división se divide en tres conjuntos con funciones específicas durante el proceso de entrenamiento y evaluación de los modelos:
+
+\begin{itemize}
+    \item \textbf{Conjunto de entrenamiento}: Se utiliza para ajustar los parámetros internos de cada modelo. En el caso de Random Forest y Gradient Boosting, este conjunto se emplea para construir los árboles de decisión, en el caso de la LSTM, se usa para actualizar los pesos de la red mediante el algoritmo de retropropagación.
+    
+    \item \textbf{Conjunto de validación}: Se emplea durante el entrenamiento para ajustar los hiperparámetros, para decidir cuándo detener el entrenamiento y para evitar el sobreajuste. 
+    
+    \item \textbf{Conjunto de prueba}: Este conjunto, se usa únicamente para la evaluación final del modelo. Una vez que el modelo ha sido entrenado y ajustado, se calculan las métricas de error sobre este conjunto para obtener una estimación de su capacidad de generalización. 
+\end{itemize}
+
+\section{Entrenamiento de modelos de Machine Learning}
+Una vez divididos los datos en los conjuntos de entrenamiento, validación y prueba, se procede al entrenamiento de los dos modelos de Machine Learning. Ambos modelos se entrenan sobre el dataset_ml (Dataset con retardos para los modelos de Machine Learning). Sin embargo, también se probará a entrenarlos con el dataset sin selección de variables, para asi ver todas las posibilidades.
+
+Para cada modelo se han seguido dos etapas. En primer lugar, se ha realizado una búsqueda de hiperparámetros con el objetivo de encontrar la configuración que minimice el error en el conjunto de validación. En segundo lugar, una vez seleccionados los mejores hiperparámetros, se ha entrenado el modelo final sobre el conjunto de entrenamiento completo. 
+
+\subsection{Random Forest}
+
+A continuación, se describe el proceso de ajuste de hiperparámetros y entrenamiento del modelo Random Forest. Pero antes de continuar, es importante comentar que se han obtenido mejores resultados al trabajar con el conjunto completo de variables que con el conjunto reducido. Es por ello, que los resultados mostrados a continuación son los obtenidos tras el entrenamiento con el dataset completo. 
+
+\subsubsection{Configuración de hiperparámetros}
+
+Para el modelo Random Forest se ha definido un espacio de búsqueda que incluye los siguientes hiperparámetros:
+
+\begin{itemize}
+    \item \textit{n\_estimators}: número de árboles del bosque (100, 150, 200, 250, 300).
+    \item \textit{max\_depth}: profundidad máxima de cada árbol (5, 7, 10, 12, 15, 20, None).
+    \item \textit{min\_samples\_split}: número mínimo de muestras requerido para dividir un nodo (2, 5, 7, 10).
+    \item \textit{min\_samples\_leaf}: número mínimo de muestras requerido en una hoja (1, 2, 3, 4).
+\end{itemize}
+
+El ajuste de hiperparámetros se ha realizado mediante búsqueda en rejilla (\texttt{GridSearchCV}) \cite{scikit_grid} combinada con validación cruzada temporal (\texttt{TimeSeriesSplit}) \cite{scikit_ts} con 3 divisiones, garantizando asi el orden cronológico de los datos. En cuanto a La métrica de optimización, esta ha sido el error cuadrático medio (\textit{MSE}) \cite{mse}.
+
+Tras la busqueda de hiperparámetros, los mejores obtenidos han sido:
+
+\begin{itemize}
+    \item \textit{n\_estimators} = 250
+    \item \textit{max\_depth} = 5
+    \item \textit{min\_samples\_split} = 10
+    \item \textit{min\_samples\_leaf} = 2
+\end{itemize}
+
+El mejor MSE alcanzado durante la búsqueda ha sido de 0,008. Realizando la misma busqueda pero con el dataset reducido, el mejor MSE obtenido ha sido de 0,0095, lo que confirma que el modelo obtiene mejores resultados al trabajar con el conjunto completo de variables.
+
+\subsubsection{Entrenamiento}
+
+Una vez seleccionados los mejores hiperparámetros, se ha entrenado el modelo Random Forest final sobre el conjunto de entrenamiento completo (212 meses). Para ello, se ha utilizado la implementación \textit{RandomForestRegressor} de la librería scikit-learn \cite{scikit_rf}. Tras el entrenamiento, el modelo ha sido guardado para su posterior uso en la fase de evaluación.
+
+En cuanto a las métricas de error obtenidas en la fase de validación, se ha obtenido lo siguiente:
+
+\begin{itemize}
+    \item \textbf{MAE} (Error Absoluto Medio): 0,08
+    \item \textbf{RMSE} (Raíz del Error Cuadrático Medio): 0,098
+\end{itemize}
+
+Estos valores indican que, de media, la predicción del modelo se desvía aproximadamente un 8\% del rendimiento real de Apple, un resultado razonable teniendo en cuenta la alta volatilidad de los mercados financieros. Puntualizar que estos valores, también son menores que los obtenidos con el dataset reducido.
+
+\subsection{Gradient Boosting}
+
+En lo que respecta al modelo Gradient Boosting, se ha seguido la misma metodología que en el caso anterior, búsqueda de hiperparámetros con validación cruzada temporal y entrenamiento final con el conjunto completo de variables.
+
+\subsubsection{Configuración de hiperparámetros}
+
+Para el modelo Gradient Boosting se ha definido el siguiente espacio de búsqueda:
+
+\begin{itemize}
+    \item \textit{n\_estimators}: número de árboles (100, 150, 200, 250, 300).
+    \item \textit{learning\_rate}: tasa de aprendizaje (0.005, 0.01, 0.03, 0.05, 0.1).
+    \item \textit{max\_depth}: profundidad máxima de cada árbol (3, 5, 7, 9).
+    \item \textit{subsample}: fracción de muestras utilizada en cada iteración (0.4, 0.6, 0.8, 1.0).
+    \item \textit{min\_samples\_split}: mínimo de muestras para dividir un nodo (2, 5, 8, 10, 12, 15).
+\end{itemize}
+
+Al igual que en el caso de Random Forest, el ajuste se ha realizado con \texttt{GridSearchCV} y validación cruzada temporal \texttt{TimeSeriesSplit} con 3 divisiones y los mejores hiperparámetros obtenidos han sido:
+
+\begin{itemize}
+    \item \texttt{n\_estimators} = 100
+    \item \texttt{learning\_rate} = 0,005
+    \item \texttt{max\_depth} = 7
+    \item \texttt{subsample} = 0,4
+    \item \texttt{min\_samples\_split} = 15
+\end{itemize}
+
+El mejor MSE alcanzado durante la búsqueda ha sido de 0,0074.
+
+\subsubsection{Entrenamiento}
+
+Con los mejores hiperparámetros seleccionados, se ha entrenado el modelo Gradient Boosting final sobre el conjunto de entrenamiento. Para ello, se ha utilizado la implementación \textit{GradientBoostingRegressor} de scikit-learn \cite{scikit_gb}.
+
+Tras el entrenamiento, las métricas de error obtenidas sobre el conjunto de validación han sido:
+
+\begin{itemize}
+    \item \textbf{MAE} (Error Absoluto Medio): 0,0723
+    \item \textbf{RMSE} (Raíz del Error Cuadrático Medio): 0,0843
+\end{itemize}
+
+Estos resultados son ligeramente mejores que los obtenidos con Random Forest, lo que indica que, para este problema, el enfoque de boosting ha resultado más efectivo que el de bagging.
+
+\section{Entrenamiento del modelo de Deep Learning: LSTM}
+
+\subsection{Preprocesamiento específico para LSTM}
+\subsubsection{Escalado de los datos}
+\subsubsection{Creación de secuencias temporales}
+
+\subsection{Arquitectura de la red}
+
+\subsection{Compilación y entrenamiento}
+
+\section{Evaluación de los modelos}
+
+\subsection{Métricas de evaluación}
+\subsection{Estrategia de backtesting}
+\subsection{Resultados de Random Forest}
+\subsection{Resultados de Gradient Boosting}
+\subsection{Resultados de LSTM}
+\subsection{Comparativa global}
+
+\section{Conclusiones del capítulo}
