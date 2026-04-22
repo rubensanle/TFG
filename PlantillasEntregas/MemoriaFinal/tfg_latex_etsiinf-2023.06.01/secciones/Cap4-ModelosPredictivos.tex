@@ -127,15 +127,41 @@ Tras el entrenamiento, las métricas de error obtenidas sobre el conjunto de val
 
 Estos resultados son ligeramente mejores que los obtenidos con Random Forest, lo que indica que, para este problema, el enfoque de boosting ha resultado más efectivo que el de bagging.
 
-\section{Entrenamiento del modelo de Deep Learning: LSTM}
+\section{Modelo de Deep Learning: LSTM}
+
+Pasando ahora a describir la implementación de la red LSTM, un tipo de red neuronal recurrente diseñada para capturar dependencias temporales en datos secuenciales. Este modelo LSTM, a diferencia de los modelos de Machine Learning, requiere un preprocesamiento adicional y una arquitectura específica para poder aprovechar su capacidad de memoria a largo plazo. Por otro lado, en el caso de Deep Learning, se ha entrenado el modelo tanto con el dataset completo de variables como con el dataset reducido, obteniendo mejores resultados con el dataset reducido, por lo que se mostrarán los resultados obtenidos con dicho dataset.
 
 \subsection{Preprocesamiento específico para LSTM}
+Los procesos de preprocesamiento para la red LSTM, son primero de todo un escalado de los datos \cite{escalado_datos} y posteriormente la creación de secuencias temporales. A continuación, se detallan ambos procesos:
+
 \subsubsection{Escalado de los datos}
+
+A diferencia de los modelos Random Forest y Gradient Boosting, que son modelos que no varian ante transformaciones lineales de las variables, las redes neuronales son sensibles a la escala de los datos de entrada. Es por ello que, es necesario escalar todas las variables para que se encuentren en un rango similar, ayudand asi al alhoritmo durante el entrenamiento. El proces de escalado en este trabajo se ha llevado a cabo a través de la técnica \texttt{MinMaxScaler} de scikit-learn \cite{minmaxscaler}, que transforma los datos al rango $[-1, 1]$. 
+
 \subsubsection{Creación de secuencias temporales}
+
+El modelo LSTM no procesa las observaciones de forma independiente, sino que necesita una serie de pasos para predecir el siguiente valor. Por esto mismo, se ha definido una ventana de entrada de \texttt{INPUT\_LENGTH = 6} meses, es decir, el modelo utiliza los seis meses anteriores para realizar la predicción. Por otro lado, el número de meses a predecir es de \texttt{OUTPUT\_LENGTH = 6} meses, lo que permite evaluar la capacidad del modelo para predecir a medio plazo. Por último, se hadefinido en Python una función llamada \texttt{crear\_secuencias}, que transforma el dataset original en un conjunto de secuencias supervisadas, donde cada muestra de entrada es un array de dimensiones \texttt{(INPUT\_LENGTH, num\_features)} y la salida es un array de dimensiones \texttt{(OUTPUT\_LENGTH, 1)}.
 
 \subsection{Arquitectura de la red}
 
+Pasando ahora a la arquitectura de la red, esta se ha diseñado de forma sencilla para asi poder adaptarse al tamaño reducido del dataset. Para ello, se ha utilizado una única capa LSTM con 32 neuronas. A continuación, se ha añadido una capa de salida densa con activación lineal y con 6 neuronas (meses a predecir). A su vez, se ha incluido una tasa de \texttt{dropout} \cite{dropout} del 20\% tanto en la entrada como en las conexiones recurrentes para asi poder evitar el sobreajuste. 
+
 \subsection{Compilación y entrenamiento}
+
+El modelo se ha compilado utilizando \texttt{Adam} \cite{Adam}, se le ha establecido una tasa de aprendizaje de 0,001. En cuanto a la función de perdida empleada, esta ha sido error cuadrático medio (MSE), también se ha seguido el error absoluto medio (MAE). Para acabar con la compilación del modelo, durante la misma, se han utilizado dos \textit{callbacks} \cite{callbacks}, uno de ellos ha sido \texttt{EarlyStopping} \cite{earlystopping} con paciencia de 10 épocas para detener el entrenamiento cuando la pérdida en validación dejase de mejorar y restaurando los pesos del mejor modelo, también se ha usado \texttt{ReduceLROnPlateau} \cite{reduce_lr_on_plateau} para reducir la tasa de aprendizaje a la mitad si la pérdida en validación no mejoraba durante 5 épocas, con un mínimo de $10^{-6}$.
+
+En cuanto al entrenamiento, este se ha realizado durante un máximo de 100 épocas con un (\textit{batch size}) de 32 muestras. Durante dicho entrenamiento, el proceso se detuvo en la época 54, y se restauraron los pesos de la época 44, época en la que se obtuvo el menor error de validación.
+
+En la Figura \ref{fig:lstm_training} se muestran las curvas de evolución de la pérdida (MSE) y del error absoluto medio (MAE) durante el entrenamiento. Se observa que tanto la pérdida como el MAE disminuyen progresivamente, y que la diferencia entre las curvas de entrenamiento y validación es reducida, lo que indica que el modelo no presenta problemas de sobreajuste.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{imagenes/lstm_training_curves.png}
+\caption{Evolución de la pérdida (MSE) y del MAE durante el entrenamiento de la LSTM.}
+\label{fig:lstm_training}
+\end{figure}
+
+Los mejores resultados obtenidos en el conjunto de validación fueron un MSE de 0,0818 y un MAE de 0,2375. Estos valores, son algo más altos que los obtenidos en los modelos Random Forest y Gradient Boosting, Sin embargo, los valores obetenidos demuestran que la LSTM es capaz de aprender patrones temporales pese a estar su rendimiento limitado por el reducido tamaño del conjunto de datos y la alta volatilidad inherente a las series financieras.
 
 \section{Evaluación de los modelos}
 
