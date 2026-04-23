@@ -65,13 +65,13 @@ El ajuste de hiperparámetros se ha realizado mediante búsqueda en rejilla (\te
 Tras la busqueda de hiperparámetros, los mejores obtenidos han sido:
 
 \begin{itemize}
-    \item \textit{n\_estimators} = 250
-    \item \textit{max\_depth} = 5
-    \item \textit{min\_samples\_split} = 10
+    \item \textit{n\_estimators} = 100
+    \item \textit{max\_depth} = 15
+    \item \textit{min\_samples\_split} = 4
     \item \textit{min\_samples\_leaf} = 2
 \end{itemize}
 
-El mejor MSE alcanzado durante la búsqueda ha sido de 0,008. Realizando la misma busqueda pero con el dataset reducido, el mejor MSE obtenido ha sido de 0,0095, lo que confirma que el modelo obtiene mejores resultados al trabajar con el conjunto completo de variables.
+El mejor MAE alcanzado durante el entrenamiento ha sido de 0,0701. Realizando la misma busqueda pero con el dataset reducido, el mejor MAE obtenido ha sido de 0,0095, lo que confirma que el modelo obtiene mejores resultados al trabajar con el conjunto completo de variables.
 
 \subsubsection{Entrenamiento}
 
@@ -80,11 +80,12 @@ Una vez seleccionados los mejores hiperparámetros, se ha entrenado el modelo Ra
 En cuanto a las métricas de error obtenidas en la fase de validación, se ha obtenido lo siguiente:
 
 \begin{itemize}
-    \item \textbf{MAE} (Error Absoluto Medio): 0,08
-    \item \textbf{RMSE} (Raíz del Error Cuadrático Medio): 0,098
+    \item \textbf{MAE} (Error Absoluto Medio): 0,0766
+    \item \textbf{RMSE} (Raíz del Error Cuadrático Medio): 0,0946
+    \item \textbf{R2} (Coeficiente de Determinación): -0,3221
 \end{itemize}
 
-Estos valores indican que, de media, la predicción del modelo se desvía aproximadamente un 8\% del rendimiento real de Apple, un resultado razonable teniendo en cuenta la alta volatilidad de los mercados financieros. Puntualizar que estos valores, también son menores que los obtenidos con el dataset reducido.
+Estos valores indican que, de media, la predicción del modelo se desvía aproximadamente un 7,66\% del rendimiento real de Apple, un resultado razonable teniendo en cuenta la alta volatilidad de los mercados financieros. Puntualizar que estos valores, también son menores que los obtenidos con el dataset reducido.
 
 \subsection{Gradient Boosting}
 
@@ -107,12 +108,12 @@ Al igual que en el caso de Random Forest, el ajuste se ha realizado con \texttt{
 \begin{itemize}
     \item \texttt{n\_estimators} = 100
     \item \texttt{learning\_rate} = 0,005
-    \item \texttt{max\_depth} = 7
+    \item \texttt{max\_depth} = 9
     \item \texttt{subsample} = 0,4
-    \item \texttt{min\_samples\_split} = 15
+    \item \texttt{min\_samples\_split} = 8
 \end{itemize}
 
-El mejor MSE alcanzado durante la búsqueda ha sido de 0,0074.
+El mejor MAE alcanzado durante el entrenamiento ha sido de 0,0664.
 
 \subsubsection{Entrenamiento}
 
@@ -121,8 +122,8 @@ Con los mejores hiperparámetros seleccionados, se ha entrenado el modelo Gradie
 Tras el entrenamiento, las métricas de error obtenidas sobre el conjunto de validación han sido:
 
 \begin{itemize}
-    \item \textbf{MAE} (Error Absoluto Medio): 0,0723
-    \item \textbf{RMSE} (Raíz del Error Cuadrático Medio): 0,0843
+    \item \textbf{MAE} (Error Absoluto Medio): 0,0727
+    \item \textbf{RMSE} (Raíz del Error Cuadrático Medio): 0,0847
 \end{itemize}
 
 Estos resultados son ligeramente mejores que los obtenidos con Random Forest, lo que indica que, para este problema, el enfoque de boosting ha resultado más efectivo que el de bagging.
@@ -164,12 +165,69 @@ En la Figura \ref{fig:lstm_training} se muestran las curvas de evolución de la 
 Los mejores resultados obtenidos en el conjunto de validación fueron un MSE de 0,0818 y un MAE de 0,2375. Estos valores, son algo más altos que los obtenidos en los modelos Random Forest y Gradient Boosting, Sin embargo, los valores obetenidos demuestran que la LSTM es capaz de aprender patrones temporales pese a estar su rendimiento limitado por el reducido tamaño del conjunto de datos y la alta volatilidad inherente a las series financieras.
 
 \section{Evaluación de los modelos}
+En esta sección se presentan los resultados obtenidos por cada modelo en el conjunto de prueba, utilizando las métricas de error, al igual que en el backtesting. Además, se realiza una comparativa global entre los tres modelos para determinar cuál ha sido el más efectivo en la predicción del rendimiento de Apple.
 
 \subsection{Métricas de evaluación}
+Antes de nada, mencionar que las metricas de evaluación utilizadas para comparar los modelos han sido las siguientes:
+\begin{itemize}
+    \item \textbf{MAE} (Error Absoluto Medio): Mide el error promedio absoluto entre las predicciones y los valores reales. Es una métrica fácil de interpretar, ya que se expresa en las mismas unidades que la variable objetivo.
+    
+    \item \textbf{RMSE} (Raíz del Error Cuadrático Medio): Mide la raíz cuadrada del promedio de los errores al cuadrado. Penaliza más los errores grandes que el MAE, lo que puede ser útil para detectar modelos que cometen errores significativos.
+    
+    \item \textbf{R2} (Coeficiente de Determinación): Mide la proporción de la varianza en la variable objetivo que es explicada por el modelo. Un valor de R2 cercano a 1 indica un buen ajuste del modelo a los datos, mientras que un valor cercano a 0 indica un ajuste pobre.
+\end{itemize}
+
 \subsection{Estrategia de backtesting}
+Para evaluar la robustez temporal de los modelos y evitar conclusiones optimistas derivadas de una única partición, se ha llevado a cabo un \textbf{backtesting} con ventana deslizante. La estrategia consiste en entrenar el modelo con una ventana histórica de datos y evaluarlo sobre el período siguiente, desplazando la ventana secuencialmente. En concreto, se ha utilizado una ventana de entrenamiento de 180 meses (15 años) y una ventana de prueba de 12 meses (1 año), con un desplazamiento de 12 meses entre iteraciones. Este enfoque simula el comportamiento real del modelo en diferentes períodos históricos, incluyendo la crisis financiera de 2008, la pandemia de COVID-19 y el posterior episodio inflacionario.
+
 \subsection{Resultados de Random Forest}
+A continuación, se presentan los resultados obtenidos por el modelo Random Forest en el conjunto de prueba y en el backtesting.
+
+\subsubsection{Evaluación en el conjunto de prueba}
+Sobre el conjunto de prueba, el modelo Random Forest obtuvo las siguientes métricas:
+
+\begin{itemize}
+    \item \textbf{MAE}: 0,0453 (4,53\% de error medio) Este valor indica que, en promedio, las predicciones del modelo se desvían un 4,53\% del rendimiento real de Apple, lo que representa una mejora significativa respecto a los resultados obtenidos en la fase de validación.
+    \item \textbf{RMSE}: 0,0612 (6,12\% de error cuadrático medio) Este valor, aunque algo más alto que el MAE, sigue indicando un buen rendimiento del modelo, ya que penaliza más los errores grandes. La diferencia entre el MAE y el RMSE sugiere que el modelo comete algunos errores más significativos, pero en general mantiene una buena precisión.
+    \item \textbf{R²}: 0,5033 (50,33\% de la varianza explicada) Este valor indica que el modelo es capaz de explicar aproximadamente el 50\% de la variabilidad del rendimiento mensual de Apple, lo que se considera un resultado sólido para un problema de predicción financiera, dada la complejidad y volatilidad inherente a los mercados.
+\end{itemize}
+
+Atendiendo a los valores obtenidos, se puede concluir que el modelo Random Forest ha logrado un rendimiento bastante bueno en la predicción del rendimiento de Apple, superando con creces los resultados obtenidos durante la fase de validación. Esto sugiere que el modelo ha logrado generalizar adecuadamente a datos no vistos durante el entrenamiento.
+
+En la Figura \ref{fig:rf_test_predictions} se muestra un gráfico comparativo entre las predicciones del modelo y los valores reales del rendimiento de Apple en el conjunto de prueba. Se observa que las predicciones siguen de cerca la tendencia general del rendimiento real, aunque existen algunas desviaciones puntuales, especialmente en meses con movimientos más bruscos.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{imagenes/rf_test_predictions.png}
+\caption{Comparativa entre las predicciones del modelo Random Forest y los valores reales del rendimiento de Apple en el conjunto de prueba.}
+\label{fig:rf_test_predictions}
+\end{figure}    
+
+\subsubsection{Backtesting}
+
+En cuanto al backtesting, este produjo los siguientes resultados:
+
+\begin{itemize}
+    \item \textbf{MAE medio}: 0,0698 (±0,0122) Este valor medio de MAE a lo largo de las diferentes ventanas de backtesting indica que, en promedio, el modelo se desvía un 6,98\% del rendimiento real de Apple. La desviación estándar de ±0,0122 sugiere que el rendimiento del modelo es relativamente consistente a lo largo del tiempo, aunque existen algunas variaciones dependiendo del período evaluado.
+    \item \textbf{RMSE medio}: 0,0843 (±0,0147) Este valor medio de RMSE indica que, en promedio, el modelo comete errores cuadráticos medios del 8,43\%.
+    \item \textbf{R² medio}: -0,2835 (±0,1438) Este valor medio de R² negativo indica que, en promedio a lo largo de las diferentes ventanas, el modelo no consigue superar a un predictor ingenuo basado en la media histórica. Sin embargo, es importante señalar que el rendimiento del modelo es muy variable dependiendo del período: en épocas de mercado tendencial (como la recuperación post-COVID) el modelo funciona bien, mientras que en períodos de alta volatilidad o cambios de régimen (como la crisis de 2008) su rendimiento se deteriora significativamente. Esta limitación es inherente a la naturaleza no estacionaria de los mercados financieros y al reducido tamaño del conjunto de entrenamiento (180 meses).
+\end{itemize}
+
+Con los calores aanteriores, se puede concluir que el modelo Random Forest muestra un rendimiento sólido en la predicción del rendimiento de Apple, aunque su capacidad para generalizar a diferentes períodos históricos es limitada, lo que refleja la complejidad y volatilidad de los mercados financieros. Dicha limitación viene dada también por el reducido tamaño del conjunto de entrenamiento.
+
 \subsection{Resultados de Gradient Boosting}
+A continuación, se presentan los resultados obtenidos por el modelo Gradient Boosting en el conjunto de prueba y en el backtesting.
+
+\subsubsection{Evaluación en el conjunto de prueba}
+
+\subsubsection{Backtesting}
+
 \subsection{Resultados de LSTM}
+
+\subsubsection{Evaluación en el conjunto de prueba}
+
+\subsubsection{Backtesting}
+
 \subsection{Comparativa global}
 
 \section{Conclusiones del capítulo}
