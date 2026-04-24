@@ -178,7 +178,7 @@ Antes de nada, mencionar que las metricas de evaluación utilizadas para compara
 \end{itemize}
 
 \subsection{Estrategia de backtesting}
-Para evaluar la robustez temporal de los modelos y evitar conclusiones optimistas derivadas de una única partición, se ha llevado a cabo un \textbf{backtesting} con ventana deslizante. La estrategia consiste en entrenar el modelo con una ventana histórica de datos y evaluarlo sobre el período siguiente, desplazando la ventana secuencialmente. En concreto, se ha utilizado una ventana de entrenamiento de 180 meses (15 años) y una ventana de prueba de 12 meses (1 año), con un desplazamiento de 12 meses entre iteraciones. Este enfoque simula el comportamiento real del modelo en diferentes períodos históricos, incluyendo la crisis financiera de 2008, la pandemia de COVID-19 y el posterior episodio inflacionario.
+Para evaluar la robustez temporal de los modelos y evitar conclusiones optimistas derivadas de una única partición, se ha llevado a cabo un \textbf{backtesting} con ventana deslizante. La estrategia consiste en entrenar el modelo con una ventana histórica de datos y evaluarlo sobre el período siguiente, desplazando la ventana secuencialmente. En concreto, se ha utilizado una ventana de entrenamiento de 200 meses (16,7 años) y una ventana de prueba de 12 meses (1 año), con un desplazamiento de 12 meses entre iteraciones. Este enfoque simula el comportamiento real del modelo en diferentes períodos históricos, incluyendo la crisis financiera de 2008, la pandemia de COVID-19 y el posterior episodio inflacionario.
 
 \subsection{Resultados de Random Forest}
 A continuación, se presentan los resultados obtenidos por el modelo Random Forest en el conjunto de prueba y en el backtesting.
@@ -210,7 +210,7 @@ En cuanto al backtesting, este produjo los siguientes resultados:
 \begin{itemize}
     \item \textbf{MAE medio}: 0,0698 (±0,0122) Este valor medio de MAE a lo largo de las diferentes ventanas de backtesting indica que, en promedio, el modelo se desvía un 6,98\% del rendimiento real de Apple. La desviación estándar de ±0,0122 sugiere que el rendimiento del modelo es relativamente consistente a lo largo del tiempo, aunque existen algunas variaciones dependiendo del período evaluado.
     \item \textbf{RMSE medio}: 0,0843 (±0,0147) Este valor medio de RMSE indica que, en promedio, el modelo comete errores cuadráticos medios del 8,43\%.
-    \item \textbf{R² medio}: -0,2835 (±0,1438) Este valor medio de R² negativo indica que, en promedio a lo largo de las diferentes ventanas, el modelo no consigue superar a un predictor ingenuo basado en la media histórica. Sin embargo, es importante señalar que el rendimiento del modelo es muy variable dependiendo del período: en épocas de mercado tendencial (como la recuperación post-COVID) el modelo funciona bien, mientras que en períodos de alta volatilidad o cambios de régimen (como la crisis de 2008) su rendimiento se deteriora significativamente. Esta limitación es inherente a la naturaleza no estacionaria de los mercados financieros y al reducido tamaño del conjunto de entrenamiento (180 meses).
+    \item \textbf{R² medio}: -0,2835 (±0,1438) Este valor medio de R² negativo indica que, en promedio a lo largo de las diferentes ventanas, el modelo no consigue superar a un predictor ingenuo basado en la media histórica. Sin embargo, es importante señalar que el rendimiento del modelo es muy variable dependiendo del período: en épocas de mercado tendencial (como la recuperación post-COVID) el modelo funciona bien, mientras que en períodos de alta volatilidad o cambios de régimen (como la crisis de 2008) su rendimiento se deteriora significativamente. Esta limitación es inherente a la naturaleza no estacionaria de los mercados financieros y al reducido tamaño del conjunto de entrenamiento (200 meses).
 \end{itemize}
 
 Con los calores aanteriores, se puede concluir que el modelo Random Forest muestra un rendimiento sólido en la predicción del rendimiento de Apple, aunque su capacidad para generalizar a diferentes períodos históricos es limitada, lo que refleja la complejidad y volatilidad de los mercados financieros. Dicha limitación viene dada también por el reducido tamaño del conjunto de entrenamiento.
@@ -219,8 +219,34 @@ Con los calores aanteriores, se puede concluir que el modelo Random Forest muest
 A continuación, se presentan los resultados obtenidos por el modelo Gradient Boosting en el conjunto de prueba y en el backtesting.
 
 \subsubsection{Evaluación en el conjunto de prueba}
+El modelo Gradient Boosting obtuvo los siguientes resultados sobre el conjunto de prueba:
+
+\begin{itemize}
+    \item \textbf{MAE}: 0,0613 (6,13\% de error medio) Este valor indica que en promedio, las predicciones del modelo se desvían un 6,13\% del rendimiento real de Apple, lo que representa una mejora respecto a los resultados obtenidos durante la fase de validación, aunque es algo inferior al rendimiento alcanzado por el modelo Random Forest.
+    \item \textbf{RMSE}: 0,0774 (7,74\% de error cuadrático medio) Este valor, aunque algo más alto que el MAE, sigue indicando un rendimiento razonable del modelo, aunque es ligeramente inferior al obtenido por Random Forest, lo que sugiere que el modelo comete algunos errores más significativos.
+    \item \textbf{R²}: 0,2049 (20,49\% de la varianza explicada) Este valor indica que el modelo es capaz de explicar aproximadamente el 20\% de la variabilidad del rendimiento mensual de Apple, lo que se considera un resultado modesto para un problema de predicción financiera, aunque sigue siendo una mejora respecto a los resultados obtenidos durante la fase de validación.
+\end{itemize}
+
+Según los valores obtenidos, se puede concluir que el modelo Gradient Boosting ha logrado un rendimiento razonable en la predicción del rendimiento de Apple, aunque su capacidad de generalización es inferior a la del modelo Random Forest. Esto sugiere que, para este problema específico, el enfoque de boosting no ha sido tan efectivo como el de bagging.
+
+En la Figura \ref{fig:gb_test_predictions} se muestra un gráfico comparativo entre las predicciones del modelo Gradient Boosting y los valores reales del rendimiento de Apple en el conjunto de prueba. Se observa que las predicciones siguen la tendencia general del rendimiento real, aunque existen desviaciones más pronunciadas que en el caso de Random Forest, especialmente en meses con movimientos más bruscos.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{imagenes/gb_test_predictions.png}
+\caption{Comparativa entre las predicciones del modelo Gradient Boosting y los valores reales del rendimiento de Apple en el conjunto de prueba.}
+\label{fig:gb_test_predictions}
+\end{figure}
 
 \subsubsection{Backtesting}
+En cuanto a los valores obtenidos en el backtesting, estos han sido los siguientes:
+
+\begin{itemize}
+    \item \textbf{MAE medio}: 0,0655 (±0,0108) Este valor medio de MAE a lo largo de las diferentes ventanas de backtesting indica que, en promedio, el modelo se desvía un 6,55\% del rendimiento real de Apple. La desviación estándar de ±0,0108 sugiere que el rendimiento del modelo es relativamente consistente a lo largo del tiempo, aunque existen algunas variaciones dependiendo del período evaluado.
+    \item \textbf{RMSE medio}: 0,0778 (±0,0106) Este valor medio de RMSE indica que, en promedio, el modelo comete errores cuadráticos medios del 7,78\%, lo que es ligeramente superior al obtenido por Random Forest, aunque la desviación estándar es menor, lo que sugiere un rendimiento más consistente a lo largo del tiempo.
+    \item \textbf{R² medio}: -0,0963 (±0,0383) Este valor medio de R² negativo indica que, en promedio a lo largo de las diferentes ventanas, el modelo no consigue superar a un predictor ingenuo basado en la media histórica. Sin embargo, es importante señalar que el rendimiento del modelo es más consistente a lo largo del tiempo que el de Random Forest, con menos variabilidad entre períodos, aunque sigue mostrando dificultades para capturar los cambios de régimen y la alta volatilidad de los mercados financieros.
+\end{itemize}
+
+Analizando los valores anteriores, se puede concluir que el modelo Gradient Boosting muestra un rendimiento razonable en la predicción del rendimiento de Apple, aunque su capacidad para generalizar a diferentes períodos históricos es limitada, lo que refleja la complejidad y volatilidad de los mercados financieros. Sin embargo, su rendimiento es algo más consistente a lo largo del tiempo que el de Random Forest, aunque sigue mostrando dificultades para capturar los cambios de régimen y la alta volatilidad de los mercados financieros.
 
 \subsection{Resultados de LSTM}
 
