@@ -1,5 +1,5 @@
 \chapter{Entrenamiento y validación de los modelos predictivos}
-En este capítulo se describe la implementación, el entrenamiento y validación de los modelos predictivos seleccionados para este trabajo, dichos modelos son Random Forest, Gradient Boosting y LSTM. Para tal entrenamiento, se partirá de los datasets optimizados obtenidos en el Capítulo 3 (Se recuerda que había 2 datasets, uno de ellos para los modelos ML, con retardos en variables macroeconómicas y el otro para los modelos DL, sin retardos), se detalla la partición temporal de los datos, la configuración de hiperparámetros, el entrenamiento de los modelos y la evaluación de los mismos. En lo que respecta a los fundamentos teóricos de cada modelo, estos ya se presentaron en el Capítulo 2, por lo que aquí se abordará tan solo su aplicación práctica.
+En este capítulo se describe la implementación, el entrenamiento y validación de los modelos predictivos seleccionados para este trabajo, dichos modelos son Random Forest, Gradient Boosting, LGBM y LSTM. Para tal entrenamiento, se partirá de los datasets optimizados obtenidos en el Capítulo 3 (Se recuerda que había 2 datasets, uno de ellos para los modelos ML, con retardos en variables macroeconómicas y el otro para los modelos DL, sin retardos), se detalla la partición temporal de los datos, la configuración de hiperparámetros, el entrenamiento de los modelos y la evaluación de los mismos. En lo que respecta a los fundamentos teóricos de cada modelo, estos ya se presentaron en el Capítulo 2, por lo que aquí se abordará tan solo su aplicación práctica.
 
 \section{División de los datos en entrenamiento, validación y prueba}
 
@@ -7,12 +7,12 @@ Una vez construidos los dos datasets, el siguiente paso es dividir los datos en 
 
 \subsection{Criterios de división}
 
-Para dicha división, se ha optado por un reparto del 70\% de los datos para entrenamiento, 15\% para validación y 15\% para prueba. Esta distribución permite disponer de un número un amplio número de observaciones para el entrenamiento (212 meses), al igual que se tienen conjuntos de validación y prueba con tamaños significativos (26 meses cada uno). De este modo, se garantiza que los modelos tengan suficiente información para aprender patrones en los datos, al mismo tiempo que se dispone de conjuntos adecuados para ajustar hiperparámetros y evaluar el rendimiento final.
+Para dicha división, se ha optado por un reparto del 80\% de los datos para entrenamiento, 10\% para validación y 10\% para prueba. Esta distribución permite disponer de un número un amplio número de observaciones para el entrenamiento (212 meses), al igual que se tienen conjuntos de validación y prueba con tamaños significativos (26 meses cada uno). De este modo, se garantiza que los modelos tengan suficiente información para aprender patrones en los datos, al mismo tiempo que se dispone de conjuntos adecuados para ajustar hiperparámetros y evaluar el rendimiento final.
 
 La división de los datos se ha implementado mediante una función en Python que respeta el orden secuencial de los datos, dicha función es \textit{division\_conjuntos}
 
 \begin{lstlisting}[language=Python, caption=Función para la partición temporal de los datos, label=lst:split]
-def division_conjuntos(dataframe, tr_size=0.7, vl_size=0.15, ts_size=0.15):
+def division_conjuntos(dataframe, tr_size=0.8, vl_size=0.1, ts_size=0.1):
     N = dataframe.shape[0]
     Ntrain = int(tr_size * N)
     Nval = int(vl_size * N)
@@ -47,17 +47,18 @@ Para cada modelo se han seguido dos etapas. En primer lugar, se ha realizado una
 
 \subsection{Random Forest}
 
-A continuación, se describe el proceso de ajuste de hiperparámetros y entrenamiento del modelo Random Forest. Pero antes de continuar, es importante comentar que se han obtenido mejores resultados al trabajar con el conjunto completo de variables que con el conjunto reducido. Es por ello, que los resultados mostrados a continuación son los obtenidos tras el entrenamiento con el dataset completo. 
+A continuación, se describe el proceso de ajuste de hiperparámetros y entrenamiento del modelo Random Forest. Pero antes de continuar, es importante comentar que se han obtenido mejores resultados al trabajar con el conjunto reducido de variables que con el conjunto completo. Es por ello, que los resultados mostrados a continuación son los obtenidos tras el entrenamiento con el dataset reducido, dando asi valor a la selección de variables. 
 
 \subsubsection{Configuración de hiperparámetros}
 
 Para el modelo Random Forest se ha definido un espacio de búsqueda que incluye los siguientes hiperparámetros:
 
 \begin{itemize}
-    \item \textit{n\_estimators}: número de árboles del bosque (100, 150, 200, 250, 300).
-    \item \textit{max\_depth}: profundidad máxima de cada árbol (5, 7, 10, 12, 15, 20, None).
-    \item \textit{min\_samples\_split}: número mínimo de muestras requerido para dividir un nodo (2, 5, 7, 10).
-    \item \textit{min\_samples\_leaf}: número mínimo de muestras requerido en una hoja (1, 2, 3, 4).
+    \item \textit{n\_estimators}: número de árboles del bosque (100, 200, 300).
+    \item \textit{max\_depth}: profundidad máxima de cada árbol (5, 10, 15, 20, None).
+    \item \textit{min\_samples\_split}: número mínimo de muestras requerido para dividir un nodo (2, 5, 10, 12).
+    \item \textit{min\_samples\_leaf}: número mínimo de muestras requerido en una hoja (1, 2, 4).
+    \item \textit{max\_features}: 'max_features': ['sqrt', 'log2', None]
 \end{itemize}
 
 El ajuste de hiperparámetros se ha realizado mediante búsqueda en rejilla (\texttt{GridSearchCV}) \cite{scikit_grid} combinada con validación cruzada temporal (\texttt{TimeSeriesSplit}) \cite{scikit_ts} con 3 divisiones, garantizando asi el orden cronológico de los datos. En cuanto a La métrica de optimización, esta ha sido el error cuadrático medio (\textit{MSE}) \cite{mse}.
@@ -65,13 +66,14 @@ El ajuste de hiperparámetros se ha realizado mediante búsqueda en rejilla (\te
 Tras la busqueda de hiperparámetros, los mejores obtenidos han sido:
 
 \begin{itemize}
-    \item \textit{n\_estimators} = 100
-    \item \textit{max\_depth} = 15
-    \item \textit{min\_samples\_split} = 4
+    \item \textit{n\_estimators} = 200
+    \item \textit{max\_depth} = 10
+    \item \textit{min\_samples\_split} = 5
     \item \textit{min\_samples\_leaf} = 2
+    \item \textit{max\_features} = 'None'
 \end{itemize}
 
-El mejor MAE alcanzado durante el entrenamiento ha sido de 0,0701. Realizando la misma busqueda pero con el dataset reducido, el mejor MAE obtenido ha sido de 0,0095, lo que confirma que el modelo obtiene mejores resultados al trabajar con el conjunto completo de variables.
+El mejor MAE alcanzado durante el entrenamiento ha sido de -0.6352. Realizando la misma busqueda pero con el dataset completo, el mejor MAE obtenido ha sido de -0.8321, lo que confirma que el modelo obtiene mejores resultados al trabajar con el conjunto reducido de variables.
 
 \subsubsection{Entrenamiento}
 
@@ -80,40 +82,45 @@ Una vez seleccionados los mejores hiperparámetros, se ha entrenado el modelo Ra
 En cuanto a las métricas de error obtenidas en la fase de validación, se ha obtenido lo siguiente:
 
 \begin{itemize}
-    \item \textbf{MAE} (Error Absoluto Medio): 0,0766
-    \item \textbf{RMSE} (Raíz del Error Cuadrático Medio): 0,0946
-    \item \textbf{R2} (Coeficiente de Determinación): -0,3221
+    \item \textbf{MAE} (Error Absoluto Medio): 0,0888
+    \item \textbf{RMSE} (Raíz del Error Cuadrático Medio): 0,1122
+    \item \textbf{R2} (Coeficiente de Determinación): -0,8597
+    \item \textbf{Directional Accuracy}: 0,5
 \end{itemize}
 
-Estos valores indican que, de media, la predicción del modelo se desvía aproximadamente un 7,66\% del rendimiento real de Apple, un resultado razonable teniendo en cuenta la alta volatilidad de los mercados financieros. Puntualizar que estos valores, también son menores que los obtenidos con el dataset reducido.
+Estos valores indican que, de media, la predicción del modelo se desvía aproximadamente un 8,88\% del rendimiento real de Apple, un resultado razonable teniendo en cuenta la alta volatilidad de los mercados financieros. Puntualizar que estos valores, también son menores que los obtenidos con el dataset reducido.
 
 \subsection{Gradient Boosting}
 
-En lo que respecta al modelo Gradient Boosting, se ha seguido la misma metodología que en el caso anterior, búsqueda de hiperparámetros con validación cruzada temporal y entrenamiento final con el conjunto completo de variables.
+En lo que respecta al modelo Gradient Boosting, se ha seguido la misma metodología que en el caso anterior, búsqueda de hiperparámetros con validación cruzada temporal y entrenamiento final con el conjunto reducido de variables.
 
 \subsubsection{Configuración de hiperparámetros}
 
 Para el modelo Gradient Boosting se ha definido el siguiente espacio de búsqueda:
 
 \begin{itemize}
-    \item \textit{n\_estimators}: número de árboles (100, 150, 200, 250, 300).
-    \item \textit{learning\_rate}: tasa de aprendizaje (0.005, 0.01, 0.03, 0.05, 0.1).
-    \item \textit{max\_depth}: profundidad máxima de cada árbol (3, 5, 7, 9).
-    \item \textit{subsample}: fracción de muestras utilizada en cada iteración (0.4, 0.6, 0.8, 1.0).
-    \item \textit{min\_samples\_split}: mínimo de muestras para dividir un nodo (2, 5, 8, 10, 12, 15).
+    \item \textit{n\_estimators}: número de árboles (300, 400, 500).
+    \item \textit{learning\_rate}: tasa de aprendizaje (0.03, 0.05, 0.08).
+    \item \textit{max\_depth}: profundidad máxima de cada árbol (4, 5, 6).
+    \item \textit{subsample}: fracción de muestras utilizada en cada iteración (0.7, 0.8, 0.9).
+    \item \textit{min\_samples\_split}: mínimo de muestras para dividir un nodo (10, 20, 50).
+    \item \textit{min\_samples\_eaf}: mínimo de hojas para dividir un nodo (5, 10, 15).
+    \item \textit{loss}: (Hubble)
 \end{itemize}
 
 Al igual que en el caso de Random Forest, el ajuste se ha realizado con \texttt{GridSearchCV} y validación cruzada temporal \texttt{TimeSeriesSplit} con 3 divisiones y los mejores hiperparámetros obtenidos han sido:
 
 \begin{itemize}
-    \item \texttt{n\_estimators} = 100
-    \item \texttt{learning\_rate} = 0,005
-    \item \texttt{max\_depth} = 9
-    \item \texttt{subsample} = 0,4
-    \item \texttt{min\_samples\_split} = 8
+    \item \texttt{n\_estimators} = 500
+    \item \texttt{learning\_rate} = 0,08
+    \item \texttt{max\_depth} = 6
+    \item \texttt{subsample} = 0,7
+    \item \texttt{min\_samples\_split} = 20
+    \item \texttt{min\_samples\_leaf} = 5
+    \item \texttt{loss} = Hubble
 \end{itemize}
 
-El mejor MAE alcanzado durante el entrenamiento ha sido de 0,0664.
+El mejor MAE alcanzado durante el entrenamiento ha sido de 0.6226.
 
 \subsubsection{Entrenamiento}
 
@@ -122,14 +129,61 @@ Con los mejores hiperparámetros seleccionados, se ha entrenado el modelo Gradie
 Tras el entrenamiento, las métricas de error obtenidas sobre el conjunto de validación han sido:
 
 \begin{itemize}
-    \item \textbf{MAE} (Error Absoluto Medio): 0,0727
-    \item \textbf{RMSE} (Raíz del Error Cuadrático Medio): 0,0847
+    \item \textbf{MAE} (Error Absoluto Medio): 0,0843
+    \item \textbf{RMSE} (Raíz del Error Cuadrático Medio): 0,0991
+    \item \textbf{R2} (Coeficiente de Determinación): -0,4511
+    \item \textbf{Directional Accuracy}: 0,45
 \end{itemize}
 
 Estos resultados son ligeramente mejores que los obtenidos con Random Forest, lo que indica que, para este problema, el enfoque de boosting ha resultado más efectivo que el de bagging.
 
-\section{Modelo de Deep Learning: LSTM}
+\subsection{LGBM}
+Además de los modelos Random Forest y Gradient Boosting convencionales, se ha incorporado LightGBM (Light Gradient Boosting Machine) \cite{lightgbm} como una variante optimizada del boosting. LightGBM presenta mejoras significativas respecto al Gradient Boosting, especialmente en términos de velocidad de entrenamiento y capacidad de manejo de grandes volúmenes de datos.
 
+Este modelo LGBM no estaba pensado incorporarlo de un inicio, sin embargo, sus resultados han sido tan significativos, que se ha considerado necsario añadirlo.
+
+\subsubsection{Ventajas de LightGBM frente a Gradient Boosting estándar}
+
+A diferencia del algoritmo \texttt{GradientBoostingRegressor} de scikit-learn, que utiliza un crecimiento de árboles por niveles, LightGBM emplea un crecimiento por hojas, lo que permite una mayor profundidad en las ramas más significativas y una mejor adaptación a patrones complejos. Adicionalmente, LightGBM incorpora técnicas de regularización avanzadas y soporte para early stopping.
+
+Otra ventaja importante de LightGBM es su capacidad para manejar eficientemente grandes volúmenes de datos y su inclusión de mecanismos para evitar el sobreajuste, como la regularización L1 y L2 sobre los pesos de las hojas, el subsampling de filas y columnas en cada iteración, y la posibilidad de detener el entrenamiento de forma anticipada cuando la métrica de validación deja de mejorar.
+
+\subsubsection{Configuración de hiperparámetros}
+
+Para el modelo LightGBM se ha definido el siguiente espacio de búsqueda, adaptado a las características del dataset:
+
+\begin{itemize}
+    \item \texttt{n\_estimators}: número de árboles (50, 100, 150)
+    \item \texttt{max\_depth}: profundidad máxima (3, 5, 7)
+    \item \texttt{min\_samples\_split}: mínimo de muestras para dividir un nodo (10, 20, 50)
+    \item \texttt{min\_samples\_leaf}: número minimo de hojas por árbol (5, 10, 15)
+    \item \texttt{subsample}: fracción de muestras por iteración (0.7, 0.8, 0.9)
+\end{itemize}
+
+La búsqueda de hiperparámetros se ha realizado mediante \texttt{GridSearchCV} con validación cruzada temporal \texttt{TimeSeriesSplit} de 3 divisiones, optimizando la precisión direccional. Los mejores hiperparámetros obtenidos han sido:
+
+\begin{itemize}
+    \item \texttt{n\_estimators} = 50
+    \item \texttt{max\_depth} = 7
+    \item \texttt{min\_samples\_split} = 10
+    \item \texttt{min\_samples\_leaf} = 10
+    \item \texttt{subsample} = 0.7
+\end{itemize}
+
+\subsubsection{Entrenamiento y resultados}
+
+Una vez seleccionados los hiperparámetros óptimos, se ha entrenado el modelo LightGBM sobre el conjunto de entrenamiento. Para ello, se ha utilizado \texttt{LGBMRegressor} de la librería lightbm \cite{lightbm}
+
+Tras el entrenamiento, las métricas de error obtenidas sobre el conjunto de validación han sido:
+
+\begin{itemize}
+    \item \textbf{MAE} (Error Absoluto Medio): 0,0852
+    \item \textbf{RMSE} (Raíz del Error Cuadrático Medio): 0,154
+    \item \textbf{R2} (Coeficiente de Determinación): -0,5171
+    \item \textbf{Directional Accuracy}: 0,3462
+\end{itemize}
+
+\section{Modelo de Deep Learning: LSTM}
 Pasando ahora a describir la implementación de la red LSTM, un tipo de red neuronal recurrente diseñada para capturar dependencias temporales en datos secuenciales. Este modelo LSTM, a diferencia de los modelos de Machine Learning, requiere un preprocesamiento adicional y una arquitectura específica para poder aprovechar su capacidad de memoria a largo plazo. Por otro lado, en el caso de Deep Learning, se ha entrenado el modelo tanto con el dataset completo de variables como con el dataset reducido, obteniendo mejores resultados con el dataset reducido, por lo que se mostrarán los resultados obtenidos con dicho dataset.
 
 \subsection{Preprocesamiento específico para LSTM}
@@ -137,7 +191,7 @@ Los procesos de preprocesamiento para la red LSTM, son primero de todo un escala
 
 \subsubsection{Escalado de los datos}
 
-A diferencia de los modelos Random Forest y Gradient Boosting, que son modelos que no varian ante transformaciones lineales de las variables, las redes neuronales son sensibles a la escala de los datos de entrada. Es por ello que, es necesario escalar todas las variables para que se encuentren en un rango similar, ayudand asi al alhoritmo durante el entrenamiento. El proces de escalado en este trabajo se ha llevado a cabo a través de la técnica \texttt{MinMaxScaler} de scikit-learn \cite{minmaxscaler}, que transforma los datos al rango $[-1, 1]$. 
+A diferencia de los modelos de Machine Learning, que son modelos que no varian ante transformaciones lineales de las variables, las redes neuronales son sensibles a la escala de los datos de entrada. Es por ello que, es necesario escalar todas las variables para que se encuentren en un rango similar, ayudand asi al alhoritmo durante el entrenamiento. El proces de escalado en este trabajo se ha llevado a cabo a través de la técnica \texttt{MinMaxScaler} de scikit-learn \cite{minmaxscaler}, que transforma los datos al rango $[-1, 1]$. 
 
 \subsubsection{Creación de secuencias temporales}
 
@@ -164,6 +218,7 @@ En la Figura \ref{fig:lstm_training} se muestran las curvas de evolución de la 
 
 Los mejores resultados obtenidos en el conjunto de validación fueron un MSE de 0,0818 y un MAE de 0,2375. Estos valores, son algo más altos que los obtenidos en los modelos Random Forest y Gradient Boosting, Sin embargo, los valores obetenidos demuestran que la LSTM es capaz de aprender patrones temporales pese a estar su rendimiento limitado por el reducido tamaño del conjunto de datos y la alta volatilidad inherente a las series financieras.
 
+
 \section{Evaluación de los modelos}
 En esta sección se presentan los resultados obtenidos por cada modelo en el conjunto de prueba, utilizando las métricas de error, al igual que en el backtesting. Además, se realiza una comparativa global entre los tres modelos para determinar cuál ha sido el más efectivo en la predicción del rendimiento de Apple.
 
@@ -171,14 +226,13 @@ En esta sección se presentan los resultados obtenidos por cada modelo en el con
 Antes de nada, mencionar que las metricas de evaluación utilizadas para comparar los modelos han sido las siguientes:
 \begin{itemize}
     \item \textbf{MAE} (Error Absoluto Medio): Mide el error promedio absoluto entre las predicciones y los valores reales. Es una métrica fácil de interpretar, ya que se expresa en las mismas unidades que la variable objetivo.
-    
     \item \textbf{RMSE} (Raíz del Error Cuadrático Medio): Mide la raíz cuadrada del promedio de los errores al cuadrado. Penaliza más los errores grandes que el MAE, lo que puede ser útil para detectar modelos que cometen errores significativos.
-    
-    \item \textbf{R2} (Coeficiente de Determinación): Mide la proporción de la varianza en la variable objetivo que es explicada por el modelo. Un valor de R2 cercano a 1 indica un buen ajuste del modelo a los datos, mientras que un valor cercano a 0 indica un ajuste pobre.
+    \item \textbf{R2} (Coeficiente de Determinación): Mide la proporción de la varianza en la variable objetivo que es explicada por el modelo.
+    \item \textbf{DA} (Directional Accuracy): Mide el porcentaje de aciertos en la predicción de la dirección (subida o bajada) del rendimiento.
 \end{itemize}
 
 \subsection{Estrategia de backtesting}
-Para evaluar la robustez temporal de los modelos y evitar conclusiones optimistas derivadas de una única partición, se ha llevado a cabo un \textbf{backtesting} con ventana deslizante. La estrategia consiste en entrenar el modelo con una ventana histórica de datos y evaluarlo sobre el período siguiente, desplazando la ventana secuencialmente. En concreto, se ha utilizado una ventana de entrenamiento de 200 meses (16,7 años) y una ventana de prueba de 12 meses (1 año), con un desplazamiento de 12 meses entre iteraciones. Este enfoque simula el comportamiento real del modelo en diferentes períodos históricos, incluyendo la crisis financiera de 2008, la pandemia de COVID-19 y el posterior episodio inflacionario.
+Para evaluar la robustez temporal de los modelos y evitar conclusiones optimistas derivadas de una única partición, se ha llevado a cabo un \textbf{backtesting} con ventana deslizante. La estrategia consiste en entrenar el modelo con una ventana histórica de datos y evaluarlo sobre el período siguiente, desplazando la ventana secuencialmente. Este enfoque simula el comportamiento real del modelo en diferentes períodos históricos, incluyendo la crisis financiera de 2008, la pandemia de COVID-19 y el posterior episodio inflacionario.
 
 \subsection{Resultados de Random Forest}
 A continuación, se presentan los resultados obtenidos por el modelo Random Forest en el conjunto de prueba y en el backtesting.
@@ -187,14 +241,15 @@ A continuación, se presentan los resultados obtenidos por el modelo Random Fore
 Sobre el conjunto de prueba, el modelo Random Forest obtuvo las siguientes métricas:
 
 \begin{itemize}
-    \item \textbf{MAE}: 0,0453 (4,53\% de error medio) Este valor indica que, en promedio, las predicciones del modelo se desvían un 4,53\% del rendimiento real de Apple, lo que representa una mejora significativa respecto a los resultados obtenidos en la fase de validación.
-    \item \textbf{RMSE}: 0,0612 (6,12\% de error cuadrático medio) Este valor, aunque algo más alto que el MAE, sigue indicando un buen rendimiento del modelo, ya que penaliza más los errores grandes. La diferencia entre el MAE y el RMSE sugiere que el modelo comete algunos errores más significativos, pero en general mantiene una buena precisión.
-    \item \textbf{R²}: 0,5033 (50,33\% de la varianza explicada) Este valor indica que el modelo es capaz de explicar aproximadamente el 50\% de la variabilidad del rendimiento mensual de Apple, lo que se considera un resultado sólido para un problema de predicción financiera, dada la complejidad y volatilidad inherente a los mercados.
+    \item \textbf{MAE}: 0,0477 (4,77\% de error medio) Este valor indica que, en promedio, las predicciones del modelo se desvían un 4,53\% del rendimiento real de Apple, lo que representa una mejora significativa respecto a los resultados obtenidos en la fase de validación.
+    \item \textbf{RMSE}: 0,579 (5,79\% de error cuadrático medio) Este valor, aunque algo más alto que el MAE, sigue indicando un buen rendimiento del modelo, ya que penaliza más los errores grandes. La diferencia entre el MAE y el RMSE sugiere que el modelo comete algunos errores más significativos, pero en general mantiene una buena precisión.
+    \item \textbf{R²}: -0,0001 (prácticamente 0\% de la varianza explicada). Este valor indica que el modelo no logra explicar la variabilidad del rendimiento de Apple, comportándose de manera similar a un predictor ingenuo basado en la media histórica.
+    \item \textbf{DA}: 0,5926 (59,26\% de aciertos direccionales). El modelo acierta la dirección del movimiento (subida o bajada) en aproximadamente 6 de cada 10 meses.
 \end{itemize}
 
-Atendiendo a los valores obtenidos, se puede concluir que el modelo Random Forest ha logrado un rendimiento bastante bueno en la predicción del rendimiento de Apple, superando con creces los resultados obtenidos durante la fase de validación. Esto sugiere que el modelo ha logrado generalizar adecuadamente a datos no vistos durante el entrenamiento.
+Atendiendo a los valores obtenidos, el modelo Random Forest muestra un rendimiento modesto en la predicción del rendimiento de Apple. Pese a que la direccional accuracy (59,26\%) supera ligeramente el 50\%, el R² prácticamente nulo indica que el modelo no captura adecuadamente la magnitud de los movimientos. Esto sugiere que, si bien el modelo puede anticipar la dirección en más de la mitad de las ocasiones, su capacidad para cuantificar el rendimiento esperado es limitada.
 
-En la Figura \ref{fig:rf_test_predictions} se muestra un gráfico comparativo entre las predicciones del modelo y los valores reales del rendimiento de Apple en el conjunto de prueba. Se observa que las predicciones siguen de cerca la tendencia general del rendimiento real, aunque existen algunas desviaciones puntuales, especialmente en meses con movimientos más bruscos.
+En la Figura \ref{fig:rf_test_predictions} se muestra un gráfico comparativo entre las predicciones del modelo y los valores reales del rendimiento de Apple en el conjunto de prueba. Se observa que las predicciones siguen la tendencia general en algunos períodos, aunque presentan desviaciones significativas en meses con movimientos más bruscos.
 
 \begin{figure}[H]
 \centering
@@ -205,15 +260,25 @@ En la Figura \ref{fig:rf_test_predictions} se muestra un gráfico comparativo en
 
 \subsubsection{Backtesting}
 
-En cuanto al backtesting, este produjo los siguientes resultados:
+En cuanto al backtesting, en el modelo de Random Forest, se utilizó una ventana de 220 meses de entrenamiento 12 meses de prueba y una ventana deslizante de 22 meses. Los resultados obtenidos con esstos datos, fueron:
 
 \begin{itemize}
-    \item \textbf{MAE medio}: 0,0698 (±0,0122) Este valor medio de MAE a lo largo de las diferentes ventanas de backtesting indica que, en promedio, el modelo se desvía un 6,98\% del rendimiento real de Apple. La desviación estándar de ±0,0122 sugiere que el rendimiento del modelo es relativamente consistente a lo largo del tiempo, aunque existen algunas variaciones dependiendo del período evaluado.
-    \item \textbf{RMSE medio}: 0,0843 (±0,0147) Este valor medio de RMSE indica que, en promedio, el modelo comete errores cuadráticos medios del 8,43\%.
-    \item \textbf{R² medio}: -0,2835 (±0,1438) Este valor medio de R² negativo indica que, en promedio a lo largo de las diferentes ventanas, el modelo no consigue superar a un predictor ingenuo basado en la media histórica. Sin embargo, es importante señalar que el rendimiento del modelo es muy variable dependiendo del período: en épocas de mercado tendencial (como la recuperación post-COVID) el modelo funciona bien, mientras que en períodos de alta volatilidad o cambios de régimen (como la crisis de 2008) su rendimiento se deteriora significativamente. Esta limitación es inherente a la naturaleza no estacionaria de los mercados financieros y al reducido tamaño del conjunto de entrenamiento (200 meses).
+    \item \textbf{MAE medio}: 0,0663 (±0.0355) Este valor indica que, en promedio, las predicciones del modelo se desvían un 6,63\% del rendimiento real de Apple a lo largo de las diferentes ventanas de backtesting. La desviación estándar de ±0,0355 refleja una variabilidad considerable en el error según el período evaluado, oscilando entre errores bajos (cercanos al 4\%) y errores altos (superiores al 9\%).
+    \item \textbf{RMSE medio}: 0.0786 (±0,0377) Este valor, ligeramente superior al MAE, indica la existencia de errores puntuales de mayor magnitud. La desviación estándar de ±0,0377 refuerza la idea de una alta heterogeneidad en el rendimiento del modelo a lo largo del tiempo.
+    \item \textbf{R² medio}: -0.039 (±0.1664) Este valor medio negativo indica que, en promedio, el modelo no supera a un predictor ingenuo basado en la media histórica. La elevada desviación estándar de ±0,1664 revela una alta heterogeneidad en el rendimiento del modelo según el período estudiado.
+    \item \textbf{DA medio}: 0,5833 (±0.3536). La direccional accuracy media del 58,33\% indica que, a lo largo de las diferentes ventanas, el modelo acierta la dirección en aproximadamente 6 de cada 10 meses. Sin embargo, la desviación estándar de ±0,3536 es extremadamente alta, lo que sugiere que el rendimiento direccional del modelo varía drásticamente según el período evaluado.
 \end{itemize}
 
-Con los calores aanteriores, se puede concluir que el modelo Random Forest muestra un rendimiento sólido en la predicción del rendimiento de Apple, aunque su capacidad para generalizar a diferentes períodos históricos es limitada, lo que refleja la complejidad y volatilidad de los mercados financieros. Dicha limitación viene dada también por el reducido tamaño del conjunto de entrenamiento.
+Con los valores anteriores, se puede concluir que el modelo Random Forest muestra un rendimiento muy inconsistente en el backtesting. Aunque en el conjunto de prueba aislado alcanza una direccional accuracy del 59,26\%, la evaluación mediante ventanas deslizantes revela que dicho rendimiento no es estable a lo largo del tiempo. La alta variabilidad de todas las métricas indica que el modelo es extremadamente sensible al régimen de mercado.
+
+En la Figura \ref{evolucion_backrf} se puede ver la evolución de tanto la MAE como del R² a lo largo de las iteracciones. En ambos casos, se puede ver como en ambos casos, a medida que avanzan las iteraciones, los resultados mejoran (MAE más pequeña y R², más grande, llegando a valores positivos incluso). Esta mejora, indica ue el modelo capta mejor los patrones de mercado actuales.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{imagenes/rf_back_evol.png}
+\caption{Graficas de la evolución de MAE y R² a lo largo de las iteracciones del backtesting. Fuente de elaboración propia}
+\label{fig:evolucion_backrf}
+\end{figure}
 
 \subsection{Resultados de Gradient Boosting}
 A continuación, se presentan los resultados obtenidos por el modelo Gradient Boosting en el conjunto de prueba y en el backtesting.
@@ -222,14 +287,16 @@ A continuación, se presentan los resultados obtenidos por el modelo Gradient Bo
 El modelo Gradient Boosting obtuvo los siguientes resultados sobre el conjunto de prueba:
 
 \begin{itemize}
-    \item \textbf{MAE}: 0,0613 (6,13\% de error medio) Este valor indica que en promedio, las predicciones del modelo se desvían un 6,13\% del rendimiento real de Apple, lo que representa una mejora respecto a los resultados obtenidos durante la fase de validación, aunque es algo inferior al rendimiento alcanzado por el modelo Random Forest.
-    \item \textbf{RMSE}: 0,0774 (7,74\% de error cuadrático medio) Este valor, aunque algo más alto que el MAE, sigue indicando un rendimiento razonable del modelo, aunque es ligeramente inferior al obtenido por Random Forest, lo que sugiere que el modelo comete algunos errores más significativos.
-    \item \textbf{R²}: 0,2049 (20,49\% de la varianza explicada) Este valor indica que el modelo es capaz de explicar aproximadamente el 20\% de la variabilidad del rendimiento mensual de Apple, lo que se considera un resultado modesto para un problema de predicción financiera, aunque sigue siendo una mejora respecto a los resultados obtenidos durante la fase de validación.
+    \item \textbf{MAE}: 0,0437 (4,37\% de error medio) Este valor indica que en promedio, las predicciones del modelo se desvían un 4,37\% del rendimiento real de Apple, lo que representa una mejora respecto a los resultados obtenidos durante la fase de validación, aunque es algo inferior al rendimiento alcanzado por el modelo Random Forest.
+    \item \textbf{RMSE}: 0,0531 (5,31\% de error cuadrático medio) Este valor, aunque algo más alto que el MAE, sigue indicando un rendimiento razonable del modelo, aunque es ligeramente inferior al obtenido por Random Forest, lo que sugiere que el modelo comete algunos errores más significativos.
+    \item \textbf{R²}: 0,1574 (15,74\% de la varianza explicada) Este valor indica que el modelo es capaz de explicar aproximadamente el 16\% de la variabilidad del rendimiento mensual de Apple, lo que se considera un resultado modesto para un problema de predicción financiera, aunque sigue siendo una mejora respecto a los resultados obtenidos durante la fase de validación.
+    \item \textbf{DA}: 0.6296 (62,96\% de aciertos direccionales). El modelo acierta la dirección del movimiento (subida o bajada) en un poco más de 6 de cada 10 meses.
 \end{itemize}
 
-Según los valores obtenidos, se puede concluir que el modelo Gradient Boosting ha logrado un rendimiento razonable en la predicción del rendimiento de Apple, aunque su capacidad de generalización es inferior a la del modelo Random Forest. Esto sugiere que, para este problema específico, el enfoque de boosting no ha sido tan efectivo como el de bagging.
+Según los valores obtenidos, se puede concluir que el modelo Gradient Boosting ha logrado un rendimiento superior al de Random Forest en la predicción en este caso, del rendimiento de Apple. Este modelo consigue explicar una parte significativa de la variabilidad del rendimiento (R² positivo del 15,74\%), mientras que Random Forest no lograba explicar prácticamente nada. Además, la direccional accuracy del 62,96\% supera en más de 3 puntos porcentuales a la obtenida por Random Forest. Estos resultados sugieren que, para este problema específico, el enfoque de boosting ha resultado más efectivo que el de bagging.
 
-En la Figura \ref{fig:gb_test_predictions} se muestra un gráfico comparativo entre las predicciones del modelo Gradient Boosting y los valores reales del rendimiento de Apple en el conjunto de prueba. Se observa que las predicciones siguen la tendencia general del rendimiento real, aunque existen desviaciones más pronunciadas que en el caso de Random Forest, especialmente en meses con movimientos más bruscos.
+Por otro lado, en la Figura \ref{fig:gb_test_predictions} se muestra un gráfico comparativo entre las predicciones del modelo Gradient Boosting y los valores reales del rendimiento de Apple en el conjunto de prueba. Se observa que las predicciones siguen la tendencia general del rendimiento real, capturando adecuadamente tanto los movimientos alcistas como los bajistas, con desviaciones moderadas incluso en meses de mayor volatilidad.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.9\textwidth]{imagenes/gb_test_predictions.png}
@@ -238,15 +305,68 @@ En la Figura \ref{fig:gb_test_predictions} se muestra un gráfico comparativo en
 \end{figure}
 
 \subsubsection{Backtesting}
+En el caso de Gradient Boosting, se ha realizado el backtesting con una ventana de entrenamiento de 220 meses, una ventana de prueba de 20 y una ventana deslizante de 12. En cuanto a los valores obtenidos en el backtesting, estos han sido los siguientes:
+
+\begin{itemize}
+    \item \textbf{MAE medio}: 0,0602 (±0,0210). Este valor indica que, en promedio, las predicciones del modelo se desvían un 6,02\% del rendimiento real de Apple a lo largo de las diferentes ventanas de backtesting. La desviación estándar de ±0,0210 refleja una variabilidad moderada en el error según el período evaluado.
+    \item \textbf{RMSE medio}: 0,0734 (±0,0248). Este valor, ligeramente superior al MAE, indica la existencia de errores puntuales de mayor magnitud. La desviación estándar de ±0,0248 sugiere que la variabilidad del error es coherente con la observada en el MAE.
+    \item \textbf{R² medio}: -0,1684 (±0,2465). \item \textbf{R² medio}: -0,1684 (±0,2465). Este valor medio negativo indica que, en promedio a lo largo de las diferentes ventanas, el modelo no consigue superar a un predictor ingenuo basado en la media histórica. La desviación estándar de ±0,2465, aunque elevada, es ligeramente superior a la de Random Forest (±0,1664), lo que indica que el rendimiento del modelo es algo más variable entre períodos.
+    \item \textbf{DA medio}: 0,5500 (±0,1323). La direccional accuracy media del 55\% indica que, a lo largo de las diferentes ventanas, el modelo acierta la dirección en aproximadamente 5,5 de cada 10 meses. La desviación estándar de ±0,1323 sugiere que el rendimiento direccional varía entre el 42\% y el 68\% dependiendo del período evaluado.
+\end{itemize}
+
+Analizando los valores anteriores, se puede concluir que el modelo Gradient Boosting muestra un rendimiento razonable en la predicción del rendimiento de Apple, aunque su capacidad para generalizar a diferentes períodos históricos es limitada, lo que refleja la complejidad y volatilidad de los mercados financieros. Sin embargo, su rendimiento es algo más consistente a lo largo del tiempo que el de Random Forest (R² medio de -0,1684 frente a -0,5738, y desviación estándar de ±0,2465 frente a ±0,7044), lo que indica una mayor estabilidad en sus predicciones.
+
+En la Figura \ref{evolucion_backgb} se puede ver la evolución tanto del MAE como del R² a lo largo de las iteraciones. Al igual que sucede en Random Forest, en el caso de Gradient Boosting, a medida que avanzan las iteraciones, los resultados mejoran (MAE más pequeño y R² más grande, llegando en algunas iteraciones a valores cercanos a cero o ligeramente positivos). Esta mejora indica que el modelo capta mejor los patrones de mercado más recientes.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{imagenes/gb_back_evol.png}
+\caption{Graficas de la evolución de MAE y R² a lo largo de las iteracciones del backtesting. Fuente de elaboración propia}
+\label{fig:evolucion_backgb}
+\end{figure}
+
+\subsection{Resultados de LGBM}
+A Para concluir con los modelos Machine Learning, se presentan los resultados obtenidos por el modelo LightGBM en el conjunto de prueba y en el backtesting.
+
+\subsubsection{Evaluación en el conjunto de prueba}
+El modelo LightGBM obtuvo los siguientes resultados sobre el conjunto de prueba:
+
+\begin{itemize}
+    \item \textbf{MAE}: 0,0385 (3,85\% de error medio). Este valor indica que, en promedio, las predicciones del modelo se desvían un 3,85\% del rendimiento real de Apple, lo que representa una mejora significativa respecto a los modelos Random Forest (4,77\%) y Gradient Boosting (4,37\%).
+    \item \textbf{RMSE}: 0,0495 (4,95\% de error cuadrático medio). La proximidad entre el MAE y el RMSE sugiere que el modelo no comete errores excesivamente grandes, manteniendo una consistencia en sus desviaciones y superando también a los modelos anteriores (RF: 5,79\%, GB: 5,31\%).
+    \item \textbf{R²}: 0,2688 (26,88\% de la varianza explicada). Este valor positivo indica que el modelo es capaz de explicar aproximadamente el 27\% de la variabilidad del rendimiento mensual de Apple, lo que supone una mejora sustancial respecto a Gradient Boosting (15,74\%) y Random Forest (prácticamente nulo).   
+    \item \textbf{DA}: 0,7778 (77,78\% de aciertos direccionales). El modelo acierta la dirección del movimiento (subida o bajada) en aproximadamente 8 de cada 10 meses, superando ampliamente a Random Forest (59,26\%) y Gradient Boosting (62,96\%).
+\end{itemize}
+
+Según los valores obtenidos, se puede concluir que el modelo LightGBM ha logrado un rendimiento claramente superior al de Random Forest y Gradient Boosting en la predicción del rendimiento de Apple. Este modelo consigue explicar más de una cuarta parte de la variabilidad del rendimiento (R² del 26,88\%), mientras que Random Forest no lograba explicar prácticamente nada y Gradient Boosting se quedaba en el 16\%. Además, la direccional accuracy del 77,78\% supera en más de 15 puntos porcentuales a la obtenida por Gradient Boosting y en casi 19 puntos a la de Random Forest. Estos resultados demuestran que LightGBM, gracias a sus optimizaciones como el crecimiento leaf-wise y las técnicas de regularización avanzadas, es el modelo más efectivo de los tres evaluados.
+
+En la Figura \ref{fig:lgbm_test_predictions} se muestra un gráfico comparativo entre las predicciones del modelo LightGBM y los valores reales del rendimiento de Apple en el conjunto de prueba. Se observa que las predicciones siguen con gran fidelidad la tendencia general del rendimiento real, capturando adecuadamente tanto los movimientos alcistas como los bajistas. Las desviaciones son reducidas incluso en meses de mayor volatilidad, lo que refleja la capacidad del modelo para anticipar tanto la dirección como la magnitud de los movimientos del activo.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{imagenes/lgbm_test_predictions.png}
+\caption{Comparativa entre las predicciones del modelo LightGBM y los valores reales del rendimiento de Apple en el conjunto de prueba.}
+\label{fig:lgbm_test_predictions}
+\end{figure}
+
+\subsubsection{Backtesting}
 En cuanto a los valores obtenidos en el backtesting, estos han sido los siguientes:
 
 \begin{itemize}
-    \item \textbf{MAE medio}: 0,0655 (±0,0108) Este valor medio de MAE a lo largo de las diferentes ventanas de backtesting indica que, en promedio, el modelo se desvía un 6,55\% del rendimiento real de Apple. La desviación estándar de ±0,0108 sugiere que el rendimiento del modelo es relativamente consistente a lo largo del tiempo, aunque existen algunas variaciones dependiendo del período evaluado.
-    \item \textbf{RMSE medio}: 0,0778 (±0,0106) Este valor medio de RMSE indica que, en promedio, el modelo comete errores cuadráticos medios del 7,78\%, lo que es ligeramente superior al obtenido por Random Forest, aunque la desviación estándar es menor, lo que sugiere un rendimiento más consistente a lo largo del tiempo.
-    \item \textbf{R² medio}: -0,0963 (±0,0383) Este valor medio de R² negativo indica que, en promedio a lo largo de las diferentes ventanas, el modelo no consigue superar a un predictor ingenuo basado en la media histórica. Sin embargo, es importante señalar que el rendimiento del modelo es más consistente a lo largo del tiempo que el de Random Forest, con menos variabilidad entre períodos, aunque sigue mostrando dificultades para capturar los cambios de régimen y la alta volatilidad de los mercados financieros.
+    \item \textbf{MAE medio}: 0,0602 (±0,0210). Este valor indica que, en promedio, las predicciones del modelo se desvían un 6,02\% del rendimiento real de Apple a lo largo de las diferentes ventanas de backtesting. La desviación estándar de ±0,0210 refleja una variabilidad moderada en el error según el período evaluado.
+    \item \textbf{RMSE medio}: 0,0734 (±0,0248). Este valor, ligeramente superior al MAE, indica la existencia de errores puntuales de mayor magnitud. La desviación estándar de ±0,0248 sugiere que la variabilidad del error es coherente con la observada en el MAE.
+    \item \textbf{R² medio}: -0,1684 (±0,2465). \item \textbf{R² medio}: -0,1684 (±0,2465). Este valor medio negativo indica que, en promedio a lo largo de las diferentes ventanas, el modelo no consigue superar a un predictor ingenuo basado en la media histórica. La desviación estándar de ±0,2465, aunque elevada, es ligeramente superior a la de Random Forest (±0,1664), lo que indica que el rendimiento del modelo es algo más variable entre períodos.
+    \item \textbf{DA medio}: 0,5500 (±0,1323). La direccional accuracy media del 55\% indica que, a lo largo de las diferentes ventanas, el modelo acierta la dirección en aproximadamente 5,5 de cada 10 meses. La desviación estándar de ±0,1323 sugiere que el rendimiento direccional varía entre el 42\% y el 68\% dependiendo del período evaluado.
 \end{itemize}
 
-Analizando los valores anteriores, se puede concluir que el modelo Gradient Boosting muestra un rendimiento razonable en la predicción del rendimiento de Apple, aunque su capacidad para generalizar a diferentes períodos históricos es limitada, lo que refleja la complejidad y volatilidad de los mercados financieros. Sin embargo, su rendimiento es algo más consistente a lo largo del tiempo que el de Random Forest, aunque sigue mostrando dificultades para capturar los cambios de régimen y la alta volatilidad de los mercados financieros.
+Analizando los valores anteriores, se puede concluir que el modelo Gradient Boosting muestra un rendimiento razonable en la predicción del rendimiento de Apple, aunque su capacidad para generalizar a diferentes períodos históricos es limitada, lo que refleja la complejidad y volatilidad de los mercados financieros. Sin embargo, su rendimiento es algo más consistente a lo largo del tiempo que el de Random Forest (R² medio de -0,1684 frente a -0,5738, y desviación estándar de ±0,2465 frente a ±0,7044), lo que indica una mayor estabilidad en sus predicciones.
+
+En la Figura \ref{evolucion_backgb} se puede ver la evolución tanto del MAE como del R² a lo largo de las iteraciones. Al igual que sucede en Random Forest, en el caso de Gradient Boosting, a medida que avanzan las iteraciones, los resultados mejoran (MAE más pequeño y R² más grande, llegando en algunas iteraciones a valores cercanos a cero o ligeramente positivos). Esta mejora indica que el modelo capta mejor los patrones de mercado más recientes.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{imagenes/gb_back_evol.png}
+\caption{Graficas de la evolución de MAE y R² a lo largo de las iteracciones del backtesting. Fuente de elaboración propia}
+\label{fig:evolucion_backgb}
+\end{figure}
 
 \subsection{Resultados de LSTM}
 
