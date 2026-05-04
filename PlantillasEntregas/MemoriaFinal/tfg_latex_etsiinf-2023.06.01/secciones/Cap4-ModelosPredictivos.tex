@@ -41,7 +41,7 @@ Como ya se ha comentado, la división se divide en tres conjuntos con funciones 
 \end{itemize}
 
 \section{Entrenamiento de modelos de Machine Learning}
-Una vez divididos los datos en los conjuntos de entrenamiento, validación y prueba, se procede al entrenamiento de los dos modelos de Machine Learning. Ambos modelos se entrenan sobre el dataset_ml (Dataset con retardos para los modelos de Machine Learning). Sin embargo, también se probará a entrenarlos con el dataset sin selección de variables, para asi ver todas las posibilidades.
+Una vez divididos los datos en los conjuntos de entrenamiento, validación y prueba, se procede al entrenamiento de los dos modelos de Machine Learning. todos los modelos se entrenan sobre el dataset\_ml (Dataset con retardos para los modelos de Machine Learning). Sin embargo, también se probará a entrenarlos con el dataset sin selección de variables, para asi ver todas las posibilidades.
 
 Para cada modelo se han seguido dos etapas. En primer lugar, se ha realizado una búsqueda de hiperparámetros con el objetivo de encontrar la configuración que minimice el error en el conjunto de validación. En segundo lugar, una vez seleccionados los mejores hiperparámetros, se ha entrenado el modelo final sobre el conjunto de entrenamiento completo. 
 
@@ -58,7 +58,7 @@ Para el modelo Random Forest se ha definido un espacio de búsqueda que incluye 
     \item \textit{max\_depth}: profundidad máxima de cada árbol (5, 10, 15, 20, None).
     \item \textit{min\_samples\_split}: número mínimo de muestras requerido para dividir un nodo (2, 5, 10, 12).
     \item \textit{min\_samples\_leaf}: número mínimo de muestras requerido en una hoja (1, 2, 4).
-    \item \textit{max\_features}: 'max_features': ['sqrt', 'log2', None]
+    \item \textit{max\_features}: 'max\_features': ['sqrt', 'log2', None]
 \end{itemize}
 
 El ajuste de hiperparámetros se ha realizado mediante búsqueda en rejilla (\texttt{GridSearchCV}) \cite{scikit_grid} combinada con validación cruzada temporal (\texttt{TimeSeriesSplit}) \cite{scikit_ts} con 3 divisiones, garantizando asi el orden cronológico de los datos. En cuanto a La métrica de optimización, esta ha sido el error cuadrático medio (\textit{MSE}) \cite{mse}.
@@ -105,7 +105,7 @@ Para el modelo Gradient Boosting se ha definido el siguiente espacio de búsqued
     \item \textit{subsample}: fracción de muestras utilizada en cada iteración (0.7, 0.8, 0.9).
     \item \textit{min\_samples\_split}: mínimo de muestras para dividir un nodo (10, 20, 50).
     \item \textit{min\_samples\_eaf}: mínimo de hojas para dividir un nodo (5, 10, 15).
-    \item \textit{loss}: (Hubble)
+    \item \textit{loss}: (huber)
 \end{itemize}
 
 Al igual que en el caso de Random Forest, el ajuste se ha realizado con \texttt{GridSearchCV} y validación cruzada temporal \texttt{TimeSeriesSplit} con 3 divisiones y los mejores hiperparámetros obtenidos han sido:
@@ -117,7 +117,7 @@ Al igual que en el caso de Random Forest, el ajuste se ha realizado con \texttt{
     \item \texttt{subsample} = 0,7
     \item \texttt{min\_samples\_split} = 20
     \item \texttt{min\_samples\_leaf} = 5
-    \item \texttt{loss} = Hubble
+    \item \texttt{loss} = huber
 \end{itemize}
 
 El mejor MAE alcanzado durante el entrenamiento ha sido de 0.6226.
@@ -144,7 +144,7 @@ Este modelo LGBM no estaba pensado incorporarlo de un inicio, sin embargo, sus r
 
 \subsubsection{Ventajas de LightGBM frente a Gradient Boosting estándar}
 
-A diferencia del algoritmo \texttt{GradientBoostingRegressor} de scikit-learn, que utiliza un crecimiento de árboles por niveles, LightGBM emplea un crecimiento por hojas, lo que permite una mayor profundidad en las ramas más significativas y una mejor adaptación a patrones complejos. Adicionalmente, LightGBM incorpora técnicas de regularización avanzadas y soporte para early stopping.
+A diferencia del algoritmo \texttt{GradientBoostingRegressor} de scikitlearn, que utiliza un crecimiento de árboles por niveles, LightGBM emplea un crecimiento por hojas, lo que permite una mayor profundidad en las ramas más significativas y una mejor adaptación a patrones complejos. Adicionalmente, LightGBM incorpora técnicas de regularización avanzadas y soporte para early stopping.
 
 Otra ventaja importante de LightGBM es su capacidad para manejar eficientemente grandes volúmenes de datos y su inclusión de mecanismos para evitar el sobreajuste, como la regularización L1 y L2 sobre los pesos de las hojas, el subsampling de filas y columnas en cada iteración, y la posibilidad de detener el entrenamiento de forma anticipada cuando la métrica de validación deja de mejorar.
 
@@ -172,7 +172,7 @@ La búsqueda de hiperparámetros se ha realizado mediante \texttt{GridSearchCV} 
 
 \subsubsection{Entrenamiento y resultados}
 
-Una vez seleccionados los hiperparámetros óptimos, se ha entrenado el modelo LightGBM sobre el conjunto de entrenamiento. Para ello, se ha utilizado \texttt{LGBMRegressor} de la librería lightbm \cite{lightbm}
+Una vez seleccionados los hiperparámetros óptimos, se ha entrenado el modelo LightGBM sobre el conjunto de entrenamiento. Para ello, se ha utilizado \texttt{LGBMRegressor} de la librería lightbm \cite{lightgbm}
 
 Tras el entrenamiento, las métricas de error obtenidas sobre el conjunto de validación han sido:
 
@@ -187,37 +187,45 @@ Tras el entrenamiento, las métricas de error obtenidas sobre el conjunto de val
 Pasando ahora a describir la implementación de la red LSTM, un tipo de red neuronal recurrente diseñada para capturar dependencias temporales en datos secuenciales. Este modelo LSTM, a diferencia de los modelos de Machine Learning, requiere un preprocesamiento adicional y una arquitectura específica para poder aprovechar su capacidad de memoria a largo plazo. Por otro lado, en el caso de Deep Learning, se ha entrenado el modelo tanto con el dataset completo de variables como con el dataset reducido, obteniendo mejores resultados con el dataset reducido, por lo que se mostrarán los resultados obtenidos con dicho dataset.
 
 \subsection{Preprocesamiento específico para LSTM}
-Los procesos de preprocesamiento para la red LSTM, son primero de todo un escalado de los datos \cite{escalado_datos} y posteriormente la creación de secuencias temporales. A continuación, se detallan ambos procesos:
+Los procesos de preprocesamiento para la red LSTM son, primero de todo, un escalado de los datos \cite{escalado_datos} y posteriormente la creación de secuencias temporales. A continuación, se detallan ambos procesos:
 
 \subsubsection{Escalado de los datos}
-
-A diferencia de los modelos de Machine Learning, que son modelos que no varian ante transformaciones lineales de las variables, las redes neuronales son sensibles a la escala de los datos de entrada. Es por ello que, es necesario escalar todas las variables para que se encuentren en un rango similar, ayudand asi al alhoritmo durante el entrenamiento. El proces de escalado en este trabajo se ha llevado a cabo a través de la técnica \texttt{MinMaxScaler} de scikit-learn \cite{minmaxscaler}, que transforma los datos al rango $[-1, 1]$. 
+A diferencia de los modelos de Machine Learning, que no varían ante transformaciones lineales de las variables, las redes neuronales son sensibles a la escala de los datos de entrada. Es por ello que es necesario escalar todas las variables para que se encuentren en un rango similar, ayudando así al algoritmo durante el entrenamiento. El proceso de escalado en este trabajo se ha llevado a cabo a través de la técnica \texttt{MinMaxScaler} de scikit-learn \cite{minmaxscaler}, que transforma los datos al rango [−1,1][−1,1].
 
 \subsubsection{Creación de secuencias temporales}
+El modelo LSTM no procesa las observaciones de forma independiente, sino que necesita una serie de pasos para predecir el siguiente valor. Por esto mismo, se ha definido una ventana de entrada de \texttt{INPUT\_LENGTH = 12} meses, es decir, el modelo utiliza los doce meses anteriores para realizar la predicción. Por otro lado, el número de meses a predecir es de \texttt{OUTPUT\_LENGTH = 6} meses, lo que permite evaluar la capacidad del modelo para predecir a medio plazo. Por último, se ha definido en Python una función llamada \texttt{crear\_secuencias}, que transforma el dataset original en un conjunto de secuencias supervisadas, donde cada muestra de entrada es un array de dimensiones \texttt{(INPUT\_LENGTH, num_features)} y la salida es un array de dimensiones \texttt{(OUTPUT\_LENGTH, 1)}.
 
-El modelo LSTM no procesa las observaciones de forma independiente, sino que necesita una serie de pasos para predecir el siguiente valor. Por esto mismo, se ha definido una ventana de entrada de \texttt{INPUT\_LENGTH = 6} meses, es decir, el modelo utiliza los seis meses anteriores para realizar la predicción. Por otro lado, el número de meses a predecir es de \texttt{OUTPUT\_LENGTH = 6} meses, lo que permite evaluar la capacidad del modelo para predecir a medio plazo. Por último, se hadefinido en Python una función llamada \texttt{crear\_secuencias}, que transforma el dataset original en un conjunto de secuencias supervisadas, donde cada muestra de entrada es un array de dimensiones \texttt{(INPUT\_LENGTH, num\_features)} y la salida es un array de dimensiones \texttt{(OUTPUT\_LENGTH, 1)}.
+\subsection{Técnicas de regularización para datos limitados}
+
+Continuando con el procesamiento de los dato spara LSTM, dado el reducido tamaño del conjunto de datos disponibles, se han implementado dos técnicas complementarias para mitigar el riesgo de sobreajuste y mejorar la capacidad de generalización del modelo.
+
+\subsubsection{Data Augmentation}
+La primera técnica consiste en la aumentación de datos (\textit{data augmentation}) \cite{data_augmentation} mediante la adición controlada de ruido gaussiano a las muestras de entrenamiento. Esta técnica, ampliamente utilizada en el ámbito del Deep Learning cuando se dispone de conjuntos de datos limitados, permite generar nuevas muestras sintéticas a partir de las existentes, incrementando artificialmente el tamaño del conjunto de entrenamiento. En concreto, se ha implementado una función \texttt{augment\_data} que duplica el conjunto de entrenamiento añadiendo ruido gaussiano con una desviación típica de 0,0005 a cada muestra. De este modo, el modelo dispone del doble de ejemplos para aprender, lo que contribuye a reducir el sobreajuste y mejora la robustez de las predicciones. Esto se hahecho debido a que al entrenar el modelo con una muestra de datos tan reducida, los valores que se obtenían eran bastante malos (Directional Accuracy por debajo del 50\% o R2 muy negativo). Tras la aplicación de la función data\_augmentation, se ha conseguido pasar de un dataset de entrenamiento de 194 muesras a 388.
+
+\subsubsection{Inyección de ruido controlado}
+
+Además de la aumentación de datos, se ha incorporado una capa de ruido gaussiano (\texttt{GaussianNoise}) \cite{gausian_noise} al inicio de la arquitectura de la red. Esta capa añade pequeñas perturbaciones aleatorias a las entradas durante el entrenamiento, pero permanece inactiva durante la fase de inferencia. El objetivo de esta técnica es doble, por un lado, fuerza al modelo a aprender representaciones más robustas y menos sensibles a pequeñas variaciones en los datos de entrada; por otro lado, actúa como un regularizador adicional que dificulta la memorización de los patrones específicos de entrenamiento. En este trabajo, se ha configurado con una desviación típica de 0,0005, un valor lo suficientemente pequeño como para no distorsionar la señal original pero lo bastante significativo para aportar el efecto regularizador deseado.
 
 \subsection{Arquitectura de la red}
 
-Pasando ahora a la arquitectura de la red, esta se ha diseñado de forma sencilla para asi poder adaptarse al tamaño reducido del dataset. Para ello, se ha utilizado una única capa LSTM con 32 neuronas. A continuación, se ha añadido una capa de salida densa con activación lineal y con 6 neuronas (meses a predecir). A su vez, se ha incluido una tasa de \texttt{dropout} \cite{dropout} del 20\% tanto en la entrada como en las conexiones recurrentes para asi poder evitar el sobreajuste. 
+Pasando ahora a la arquitectura de la red, esta se ha diseñado de forma sencilla para poder adaptarse al tamaño reducido del dataset. Para ello, se ha utilizado una única capa LSTM con 32 neuronas. A continuación, se ha añadido una capa de salida densa con activación lineal y con 6 neuronas, correspondientes a los meses a predecir. A su vez, se ha incluido una tasa de \texttt{dropout} \cite{dropout} del 20\% tanto en la entrada como en las conexiones recurrentes para evitar el sobreajuste. Adicionalmente, como se ha mencionado anteriormente, se ha incorporado una capa de \texttt{GaussianNoise} al inicio de la red y se ha aplicado data augmentation sobre el conjunto de entrenamiento.
 
 \subsection{Compilación y entrenamiento}
 
-El modelo se ha compilado utilizando \texttt{Adam} \cite{Adam}, se le ha establecido una tasa de aprendizaje de 0,001. En cuanto a la función de perdida empleada, esta ha sido error cuadrático medio (MSE), también se ha seguido el error absoluto medio (MAE). Para acabar con la compilación del modelo, durante la misma, se han utilizado dos \textit{callbacks} \cite{callbacks}, uno de ellos ha sido \texttt{EarlyStopping} \cite{earlystopping} con paciencia de 10 épocas para detener el entrenamiento cuando la pérdida en validación dejase de mejorar y restaurando los pesos del mejor modelo, también se ha usado \texttt{ReduceLROnPlateau} \cite{reduce_lr_on_plateau} para reducir la tasa de aprendizaje a la mitad si la pérdida en validación no mejoraba durante 5 épocas, con un mínimo de $10^{-6}$.
+El modelo se ha compilado utilizando \texttt{Adam} \cite{Adam} con una tasa de aprendizaje de 0,001. En cuanto a la función de pérdida empleada, esta ha sido el error cuadrático medio (MSE), monitorizándose también el error absoluto medio (MAE). Durante el entrenamiento, se han utilizado dos \textit{callbacks} \cite{callbacks}. El primero, \texttt{EarlyStopping} \cite{earlystopping}, con una paciencia de 50 épocas, detiene el entrenamiento cuando la pérdida en validación deja de mejorar y restaura los pesos del mejor modelo. El segundo, \texttt{ReduceLROnPlateau} \cite{reduce_lr_on_plateau}, reduce la tasa de aprendizaje a la mitad si la pérdida en validación no mejora durante 10 épocas consecutivas.
 
-En cuanto al entrenamiento, este se ha realizado durante un máximo de 100 épocas con un (\textit{batch size}) de 32 muestras. Durante dicho entrenamiento, el proceso se detuvo en la época 54, y se restauraron los pesos de la época 44, época en la que se obtuvo el menor error de validación.
+En cuanto al entrenamiento, este se ha realizado durante un máximo de 500 épocas con un \textit{batch size} de 32 muestras. El proceso se detuvo automáticamente en la época 326, restaurándose los pesos de la época 276, momento en el que se obtuvo el menor error de validación.
 
-En la Figura \ref{fig:lstm_training} se muestran las curvas de evolución de la pérdida (MSE) y del error absoluto medio (MAE) durante el entrenamiento. Se observa que tanto la pérdida como el MAE disminuyen progresivamente, y que la diferencia entre las curvas de entrenamiento y validación es reducida, lo que indica que el modelo no presenta problemas de sobreajuste.
+En la Figura \ref{fig:lstm_training} se muestran las curvas de evolución de la pérdida (MSE) y del error absoluto medio (MAE) durante el entrenamiento. Se observa que tanto la pérdida como el MAE disminuyen progresivamente, y que la diferencia entre las curvas de entrenamiento y validación es reducida, lo que indica que las técnicas de regularización aplicadas (data augmentation, Gaussian noise y dropout) han sido efectivas para controlar el sobreajuste.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.9\textwidth]{imagenes/lstm_training_curves.png}
-\caption{Evolución de la pérdida (MSE) y del MAE durante el entrenamiento de la LSTM.}
+\caption{Evolución de la pérdida MSE y del MAE durante el entrenamiento de la LSTM. Fuente elaboración propia}
 \label{fig:lstm_training}
 \end{figure}
 
-Los mejores resultados obtenidos en el conjunto de validación fueron un MSE de 0,0818 y un MAE de 0,2375. Estos valores, son algo más altos que los obtenidos en los modelos Random Forest y Gradient Boosting, Sin embargo, los valores obetenidos demuestran que la LSTM es capaz de aprender patrones temporales pese a estar su rendimiento limitado por el reducido tamaño del conjunto de datos y la alta volatilidad inherente a las series financieras.
-
+Los mejores resultados obtenidos en el conjunto de validación fueron un MSE de 0,0722 y un MAE de 0,2130. Estos valores, aunque superiores a los obtenidos por los modelos de Machine Learning, demuestran que la LSTM es capaz de aprender patrones temporales pese a su rendimiento limitado por el reducido tamaño del conjunto de datos y la alta volatilidad inherente a las series financieras.
 
 \section{Evaluación de los modelos}
 En esta sección se presentan los resultados obtenidos por cada modelo en el conjunto de prueba, utilizando las métricas de error, al igual que en el backtesting. Además, se realiza una comparativa global entre los tres modelos para determinar cuál ha sido el más efectivo en la predicción del rendimiento de Apple.
@@ -271,11 +279,11 @@ En cuanto al backtesting, en el modelo de Random Forest, se utilizó una ventana
 
 Con los valores anteriores, se puede concluir que el modelo Random Forest muestra un rendimiento muy inconsistente en el backtesting. Aunque en el conjunto de prueba aislado alcanza una direccional accuracy del 59,26\%, la evaluación mediante ventanas deslizantes revela que dicho rendimiento no es estable a lo largo del tiempo. La alta variabilidad de todas las métricas indica que el modelo es extremadamente sensible al régimen de mercado.
 
-En la Figura \ref{evolucion_backrf} se puede ver la evolución de tanto la MAE como del R² a lo largo de las iteracciones. En ambos casos, se puede ver como en ambos casos, a medida que avanzan las iteraciones, los resultados mejoran (MAE más pequeña y R², más grande, llegando a valores positivos incluso). Esta mejora, indica ue el modelo capta mejor los patrones de mercado actuales.
+En la Figura \ref{fig:evolucion_backrf} se puede ver la evolución de tanto la MAE como del R² a lo largo de las iteracciones. En ambos casos, se puede ver como en ambos casos, a medida que avanzan las iteraciones, los resultados mejoran (MAE más pequeña y R², más grande, llegando a valores positivos incluso). Esta mejora, indica ue el modelo capta mejor los patrones de mercado actuales.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\textwidth]{imagenes/rf_back_evol.png}
+\includegraphics[width=0.9\textwidth]{imagenes/evolucion_backrf.png}
 \caption{Graficas de la evolución de MAE y R² a lo largo de las iteracciones del backtesting. Fuente de elaboración propia}
 \label{fig:evolucion_backrf}
 \end{figure}
@@ -316,10 +324,11 @@ En el caso de Gradient Boosting, se ha realizado el backtesting con una ventana 
 
 Analizando los valores anteriores, se puede concluir que el modelo Gradient Boosting muestra un rendimiento razonable en la predicción del rendimiento de Apple, aunque su capacidad para generalizar a diferentes períodos históricos es limitada, lo que refleja la complejidad y volatilidad de los mercados financieros. Sin embargo, su rendimiento es algo más consistente a lo largo del tiempo que el de Random Forest (R² medio de -0,1684 frente a -0,5738, y desviación estándar de ±0,2465 frente a ±0,7044), lo que indica una mayor estabilidad en sus predicciones.
 
-En la Figura \ref{evolucion_backgb} se puede ver la evolución tanto del MAE como del R² a lo largo de las iteraciones. Al igual que sucede en Random Forest, en el caso de Gradient Boosting, a medida que avanzan las iteraciones, los resultados mejoran (MAE más pequeño y R² más grande, llegando en algunas iteraciones a valores cercanos a cero o ligeramente positivos). Esta mejora indica que el modelo capta mejor los patrones de mercado más recientes.
+En la Figura \ref{fig:evolucion_backgb} se puede ver la evolución tanto del MAE como del R² a lo largo de las iteraciones. Al igual que sucede en Random Forest, en el caso de Gradient Boosting, a medida que avanzan las iteraciones, los resultados mejoran (MAE más pequeño y R² más grande, llegando en algunas iteraciones a valores cercanos a cero o ligeramente positivos). Esta mejora indica que el modelo capta mejor los patrones de mercado más recientes.
+
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\textwidth]{imagenes/gb_back_evol.png}
+\includegraphics[width=0.9\textwidth]{imagenes/evolucion_backgb.png}
 \caption{Graficas de la evolución de MAE y R² a lo largo de las iteracciones del backtesting. Fuente de elaboración propia}
 \label{fig:evolucion_backgb}
 \end{figure}
@@ -349,28 +358,54 @@ En la Figura \ref{fig:lgbm_test_predictions} se muestra un gráfico comparativo 
 \end{figure}
 
 \subsubsection{Backtesting}
-En cuanto a los valores obtenidos en el backtesting, estos han sido los siguientes:
+Finalmente, en el backtesting de LightGBM, se utilizó una ventana de entrenamiento de 220 meses, una ventana de test de 12 meses y un desplazamiento de 18 meses. En lo que respecta a los resultados, se han obtenido los siguientes:
 
 \begin{itemize}
-    \item \textbf{MAE medio}: 0,0602 (±0,0210). Este valor indica que, en promedio, las predicciones del modelo se desvían un 6,02\% del rendimiento real de Apple a lo largo de las diferentes ventanas de backtesting. La desviación estándar de ±0,0210 refleja una variabilidad moderada en el error según el período evaluado.
-    \item \textbf{RMSE medio}: 0,0734 (±0,0248). Este valor, ligeramente superior al MAE, indica la existencia de errores puntuales de mayor magnitud. La desviación estándar de ±0,0248 sugiere que la variabilidad del error es coherente con la observada en el MAE.
-    \item \textbf{R² medio}: -0,1684 (±0,2465). \item \textbf{R² medio}: -0,1684 (±0,2465). Este valor medio negativo indica que, en promedio a lo largo de las diferentes ventanas, el modelo no consigue superar a un predictor ingenuo basado en la media histórica. La desviación estándar de ±0,2465, aunque elevada, es ligeramente superior a la de Random Forest (±0,1664), lo que indica que el rendimiento del modelo es algo más variable entre períodos.
-    \item \textbf{DA medio}: 0,5500 (±0,1323). La direccional accuracy media del 55\% indica que, a lo largo de las diferentes ventanas, el modelo acierta la dirección en aproximadamente 5,5 de cada 10 meses. La desviación estándar de ±0,1323 sugiere que el rendimiento direccional varía entre el 42\% y el 68\% dependiendo del período evaluado.
+    \item \textbf{MAE medio}: 0,0710 (±0,0502). Este valor indica que, en promedio, las predicciones del modelo se desvían un 7,10\% del rendimiento real de Apple a lo largo de las diferentes ventanas de backtesting. La elevada desviación estándar de ±0,0502 refleja una alta variabilidad en el error según el período evaluado, con valores que oscilan entre el 2\% en las mejores iteraciones y más del 10\% en las peores.
+    \item \textbf{RMSE medio}: 0,0798 (±0,0475). Este valor, ligeramente superior al MAE, indica la existencia de errores puntuales de mayor magnitud. La desviación estándar de ±0,0475 confirma la alta variabilidad observada en el MAE.
+    \item \textbf{R² medio}: 0,0147 (±0,5069). Este valor medio, ligeramente positivo, indica que, en promedio a lo largo de las diferentes ventanas, el modelo logra superar ligeramente a un predictor ingenuo basado en la media histórica. Sin embargo, la elevadísima desviación estándar de ±0,5069 revela una heterogeneidad extrema en el rendimiento del modelo según el período estudiado. Como se aprecia en la Figura \ref{fig:evolucion_backlgbm}, en las primeras iteraciones el R² alcanza valores muy negativos (cercanos a -0,33), mientras que en las últimas iteraciones alcanza valores positivos notables.
+    \item \textbf{DA medio}: 0,5417 (±0,4125). La direccional accuracy media del 54,17\% indica que, a lo largo de las diferentes ventanas, el modelo acierta la dirección en aproximadamente 5,4 de cada 10 meses. La desviación estándar de ±0,4125 es extremadamente alta, lo que sugiere que el rendimiento direccional varía drásticamente según el período evaluado, alcanzando valores cercanos al 100\% en las mejores iteraciones y valores muy bajos en las peores.
 \end{itemize}
 
-Analizando los valores anteriores, se puede concluir que el modelo Gradient Boosting muestra un rendimiento razonable en la predicción del rendimiento de Apple, aunque su capacidad para generalizar a diferentes períodos históricos es limitada, lo que refleja la complejidad y volatilidad de los mercados financieros. Sin embargo, su rendimiento es algo más consistente a lo largo del tiempo que el de Random Forest (R² medio de -0,1684 frente a -0,5738, y desviación estándar de ±0,2465 frente a ±0,7044), lo que indica una mayor estabilidad en sus predicciones.
+Analizando los valores anteriores, se puede concluir que el modelo LightGBM muestra un rendimiento muy heterogéneo en el backtesting. Aunque en el conjunto de prueba aislado logra resultados excepcionales (R² de 0,2688 y DA del 77,78\%), la evaluación mediante ventanas deslizantes revela que dicho rendimiento no es estable a lo largo de toda la serie histórica. Sin embargo, es importante señalar que el modelo mejora significativamente en las iteraciones más recientes, lo que sugiere que es capaz de capturar los patrones de mercado actuales con mayor efectividad que los modelos Random Forest y Gradient Boosting.
 
-En la Figura \ref{evolucion_backgb} se puede ver la evolución tanto del MAE como del R² a lo largo de las iteraciones. Al igual que sucede en Random Forest, en el caso de Gradient Boosting, a medida que avanzan las iteraciones, los resultados mejoran (MAE más pequeño y R² más grande, llegando en algunas iteraciones a valores cercanos a cero o ligeramente positivos). Esta mejora indica que el modelo capta mejor los patrones de mercado más recientes.
+En la Figura \ref{fig:evolucion_backlgbm} se puede ver la evolución tanto del MAE como del R² a lo largo de las iteraciones del backtesting. Se observa una clara tendencia ascendente del R² y descendente del MAE a medida que avanzan las iteraciones. En las primeras iteraciones (correspondientes a períodos más antiguos, como la crisis financiera de 2008), el modelo presenta un rendimiento muy pobre, con R² negativos cercanos a -0,33 y MAE superiores al 10\%. Sin embargo, a partir de la iteración 4, el R² comienza a estabilizarse en valores cercanos a cero, y en las últimas iteraciones (períodos más recientes, correspondientes a 2019-2024) el modelo alcanza su mejor rendimiento, con un R² positivo que llega hasta 0,4 y un MAE que desciende hasta aproximadamente el 2\%. Esta evolución indica que LightGBM es capaz de capturar eficazmente los patrones de mercado más recientes, aunque muestra limitaciones en períodos históricos de alta volatilidad o cambios de régimen estructural.
+
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\textwidth]{imagenes/gb_back_evol.png}
-\caption{Graficas de la evolución de MAE y R² a lo largo de las iteracciones del backtesting. Fuente de elaboración propia}
-\label{fig:evolucion_backgb}
+\includegraphics[width=0.9\textwidth]{imagenes/lgbm_back_evol.png}
+\caption{Evolución del MAE y del R² a lo largo de las iteraciones del backtesting para LightGBM. Fuente: elaboración propia.}
+\label{fig:evolucion_backlgbm}
 \end{figure}
 
 \subsection{Resultados de LSTM}
 
 \subsubsection{Evaluación en el conjunto de prueba}
+
+Una vez finalizado el entrenamiento, se ha evaluado el modelo sobre el conjunto de prueba, obteniendo los siguientes resultados:
+
+\begin{itemize}
+\item \textbf{MAE}: 0,0509 (5,09\% de error medio). Este valor indica que, en promedio, las predicciones del modelo se desvían aproximadamente un 5,09\% del rendimiento real, lo que representa un error moderado y aceptable para el contexto financiero.
+
+\item \textbf{RMSE}: 0,0603 (6,03\% de error cuadrático medio). La proximidad entre el MAE y el RMSE sugiere que el modelo no comete errores excesivamente grandes, manteniendo una consistencia en sus desviaciones.
+
+\item \textbf{R²}: 0,0396 (3,96\% de la varianza explicada). Este valor positivo, aunque modesto, indica que el modelo logra explicar una pequeña parte de la variabilidad del rendimiento mensual, superando a un predictor ingenuo basado en la media histórica. Este resultado es especialmente relevante dado el reducido tamaño del conjunto de datos y la conocida dificultad de predicción de los mercados financieros.
+
+\item \textbf{DA}: 0,6111 (61,11\% de aciertos direccionales). El modelo acierta la dirección del movimiento (subida o bajada) en aproximadamente 6 de cada 10 meses, lo que supone un rendimiento superior al azar y valida la capacidad del modelo para anticipar la tendencia del activo.
+\end{itemize}
+
+Estos resultados confirman que, pese a las limitaciones inherentes al tamaño del dataset, la implementación de técnicas de regularización como la aumentación de datos y la inyección de ruido controlado ha permitido obtener un modelo LSTM funcional con capacidad predictiva positiva. Aunque sus prestaciones son inferiores a las alcanzadas por los modelos de boosting, el hecho de haber conseguido un R² positivo y una directional accuracy superior al 60\% representa un logro significativo, especialmente considerando que las redes LSTM suelen requerir volúmenes de datos mucho mayores para ofrecer su máximo rendimiento.
+
+\subsubsection{Análisis de residuos}
+
+En la Figura \ref{fig:lstm_real_vs_pred} se muestra la comparativa entre las predicciones del modelo y los valores reales en el conjunto de prueba, mientras que la Figura \ref{fig:lstm_residuos} presenta la evolución de los errores. Se observa que los errores se distribuyen de forma relativamente homogénea en torno a cero, sin presentar patrones temporales claros, lo que indica que el modelo no presenta sesgos sistemáticos en sus predicciones.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{imagenes/lstm_real_vs_pred_test.png}
+\caption{Comparativa entre las predicciones de la LSTM y los valores reales del rendimiento en el conjunto de prueba.Fuente elaboración propia}
+\label{fig:lstm_real_vs_pred}
+\end{figure}
 
 \subsubsection{Backtesting}
 
