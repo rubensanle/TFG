@@ -13,16 +13,15 @@ Finalmente, se presentará una discusión global de los resultados obtenidos en 
 Una vez entrenados y evaluados los modelos predictivos en el Capítulo 4, se han aplicado las técnicas SHAP y LIME para comprender cómo realizan sus predicciones y qué variables resultan más influyentes en cada modelo. En esta sección se presentan los resultados obtenidos para cada uno de los cuatro modelos desarrollados, Random Forest, Gradient Boosting, LightGBM y LSTM.
 
 \subsection{Análisis con SHAP}
-SHAP (SHapley Additive exPlanations) \ref{xai_shap} permite descomponer cada predicción en la contribución individual de cada variable, ofreciendo tanto un análisis global como local. A continuación, se presentan los resultados para cada modelo.
+SHAP (Shapley Additive Explanations) \cite{xai_shap} permite descomponer cada predicción en la contribución individual de cada variable, ofreciendo tanto un análisis global como local. A continuación, se presentan los resultados para cada modelo.
 
 \begin{enumerate}
     \item \textbf{Random Forest}
         El análisis SHAP aplicado al modelo Random Forest ha permitido identificar las variables más influyentes en sus predicciones, así como comprender la relación entre dichas variables y el rendimiento previsto.
 
-        Para la realización de este análisis, se ha utilizado el explainer \texttt{TreeExplainer} \ref{treeExplainer} de la librería SHAP. A su vez, debido a que el cálculo de los valores SHAP sobre el dataset completo puede ser computacionalmente costoso, se ha tomado una muestra representativa del conjunto de entrenamiento de 100 observaciones para construir el explainer. Sobre dicha muestra, se ha ajustado el explainer y posteriormente se han calculado los valores SHAP para todo el conjunto de prueba.
+        Para la realización de este análisis, se ha utilizado el explainer \texttt{TreeExplainer} \cite{treeExplainer} de la librería SHAP. A su vez, debido a que el cálculo de los valores SHAP sobre el dataset completo puede ser computacionalmente costoso, se ha tomado una muestra representativa del conjunto de entrenamiento de 100 observaciones para construir el explainer. Sobre dicha muestra, se ha ajustado el explainer y posteriormente se han calculado los valores SHAP para todo el conjunto de prueba.
         \begin{itemize}
             \item \textbf{Importancia global de las variables}
-
             En la Figura \ref{fig:shap_importance_rf} se muestra la importancia global de las variables para el modelo Random Forest, esta importancia ha sido calculada como la media de los valores SHAP absolutos. 
 
             \begin{figure}[H]
@@ -34,12 +33,11 @@ SHAP (SHapley Additive exPlanations) \ref{xai_shap} permite descomponer cada pre
 
             En la imagen anterior se observa que la variable más influyente es el precio del activo, seguida de los tipos de interés del BCE y el vix\_lag1.
 
-            El hcho de que los tipos BCE tengán más valor que los tipos FED, sugiere que para el caso de Apple, las condiciones monetarias europeas tienen un peso relevante, esto es muy posiblemente debido a la importante presencia de la compañía en el mercado europeo.
+            El hecho de que los tipos BCE tengán más valor que los tipos FED, sugiere que para el caso de Apple, las condiciones monetarias europeas tienen un peso relevante, esto es muy posiblemente debido a la importante presencia de la compañía en el mercado europeo.
 
             Por otro lado, llama la atención el rendimiento del S\&P 500, que se sitúa en octava posición. Esto indica que el mercado aporta información, pero sin embargo, no es el factor más importante para predecir el rendimiento de Apple.
 
         \item \textbf{Gráfica de dependencia}
-
         Ahora se analizará concretamente la variable precio. En la Figura \ref{fig:shap_dependence_rf_precio} se muestra la gráfica de dependencia SHAP para esta variable. En esta gráfica, cada punto representa una muestra del conjunto de prueba.
 
         \begin{figure}[H]
@@ -78,7 +76,6 @@ SHAP (SHapley Additive exPlanations) \ref{xai_shap} permite descomponer cada pre
         El resultado neto de estas contribuciones, sumado al valor base, arrojó la predicción final del -1\%. Este ejemplo ilustra cómo el modelo Random Forest integra información de múltiples variables (tipos de interés, inflación y precio) para llegar a una predicción concreta, y cómo SHAP permite desglosar este razonamiento de forma comprensible.
         
         \item \textbf{Conclusiones del análisis SHAP para Random Forest}
-
             Del análisis SHAP aplicado al modelo Random Forest se concluye que:
 
             \begin{itemize}
@@ -93,12 +90,10 @@ SHAP (SHapley Additive exPlanations) \ref{xai_shap} permite descomponer cada pre
         \end{itemize}
 
     \item \textbf{Gradient Boosting}
-
         El análisis SHAP aplicado al modelo Gradient Boosting sigue la misma metodología que en el caso de Random Forest. Se ha utilizado el explainer \texttt{TreeExplainer} de la librería SHAP, tomando una muestra representativa de 100 observaciones del conjunto de entrenamiento para construir el explainer, y posteriormente se han calculado los valores SHAP para todo el conjunto de prueba.
 
         \begin{itemize}
             \item \textbf{Importancia global de las variables}
-
             En la Figura \ref{fig:shap_importance_gb} se muestra la importancia global de las variables para el modelo Gradient Boosting, calculada como la media de los valores SHAP absolutos.
 
             \begin{figure}[H]
@@ -110,12 +105,11 @@ SHAP (SHapley Additive exPlanations) \ref{xai_shap} permite descomponer cada pre
 
             Se observa que, al igual que en Random Forest, la variable más influyente es el \textbf{precio} del activo, con una importancia SHAP de 0,0315. Le siguen la \textbf{inflación estadounidense con tres meses de retardo} (0,0097) y la \textbf{volatilidad del mercado con un mes de retardo} (0,0092).
 
-            Por oro lado, a diferencia de Random Forest, donde los tipos del BCE ocupaban la segunda posición, en Gradient Boosting cobra mayor protagonismo la \textbf{inflación estadounidense}, que aparece de 3 formas diferentes. Esto indica que Gradient Boosting le da un peso especial a las variables relacionadas con los precios y la política monetaria de Estados Unidos.
+            Por otro lado, a diferencia de Random Forest, donde los tipos del BCE ocupaban la segunda posición, en Gradient Boosting cobra mayor protagonismo la \textbf{inflación estadounidense}, que aparece de 3 formas diferentes. Esto indica que Gradient Boosting le da un peso especial a las variables relacionadas con los precios y la política monetaria de Estados Unidos.
 
             A su vez, también destaca la presencia del \textbf{rendimiento del oro} en la octava posición, que no aparecía entre las más importantes en Random Forest. Esto indica que Gradient Boosting captura mejor la relación entre el oro y el rendimiento de Apple, esto muy posiblemente se deba a la capacidad de Gradient Boosting para modelar interacciones más complejas entre variables.
 
             \item \textbf{Gráfica de dependencia}
-
             En la Figura \ref{fig:shap_dependence_gb_precio} se muestra la gráfica de dependencia SHAP para la variable más relevante, el precio.
 
             \begin{figure}[H]
@@ -129,11 +123,10 @@ SHAP (SHapley Additive exPlanations) \ref{xai_shap} permite descomponer cada pre
 
             A su vez, se aprecia una relación no lineal entre el precio y su impacto. Aunque todos los valores son negativos, los puntos no se alinean sobre una línea recta horizontal constante. Esta no linealidad indica que el efecto del precio sobre la predicción no es perfectamente constante, sino que varía ligeramente en función de su valor y de las interacciones con otras variables, tal y como sucede en Random Forest.
 
-            Por otro lado, en el analisis de interpretabilidad, se ha visto como por ejemplo variables como la inflación de usa con retardo de 3 meses o la volailidad, con retardo de 1, ambas variables presentaban valores positivos de SHAP, lo que indica que estas vriables mejoran el rendimiento previsto.
+            Por otro lado, en el análisis de interpretabilidad, se ha visto como por ejemplo variables como la inflación de usa con retardo de 3 meses o la volatidad, con retardo de 1, ambas variables presentaban valores positivos de SHAP, lo que indica que estas variables mejoran el rendimiento previsto.
 
             \item \textbf{Análisis de una predicción individual}
-
-            Pasando ahora al analisis de una predicción individual, en la Figura \ref{fig:shap_waterfall_gb} se muestra el gráfico waterfall para dicha predicción individual del modelo Gradient Boosting.
+            Pasando ahora al análisis de una predicción individual, en la Figura \ref{fig:shap_waterfall_gb} se muestra el gráfico waterfall para dicha predicción individual del modelo Gradient Boosting.
 
             \begin{figure}[H]
             \centering
@@ -158,7 +151,6 @@ SHAP (SHapley Additive exPlanations) \ref{xai_shap} permite descomponer cada pre
             A diferencia de lo analizado en Random Forest, donde la predicción fue negativa (-1\%), en este caso Gradient Boosting predijo un rendimiento positivo del 5,6\%. 
 
             \item \textbf{Conclusiones del análisis SHAP para Gradient Boosting}
-
             Del análisis SHAP aplicado al modelo Gradient Boosting se concluye que:
 
             \begin{itemize}
@@ -175,7 +167,6 @@ SHAP (SHapley Additive exPlanations) \ref{xai_shap} permite descomponer cada pre
 
         \begin{itemize}
             \item \textbf{Importancia global de las variables}
-
             En la Figura \ref{fig:shap_importance_lgb} se muestra la importancia global de las variables para el modelo LightGBM, calculada como la media de los valores SHAP absolutos.
 
             \begin{figure}[H]
@@ -194,7 +185,6 @@ SHAP (SHapley Additive exPlanations) \ref{xai_shap} permite descomponer cada pre
             Por último, cabe destacar también la importancia de la política monetaria estadounidense, ya que aparecen entre las 10 variables más importantes,  tanto los tipos de interes contemporaneo como con retardo de 3 meses.
 
             \item \textbf{Gráfica de dependencia}
-
             Al igual que en los anterores modelos, se muestra en la Figura \ref{fig:shap_dependence_lgb_precio} la gráfica de dependencia SHAP para la variable más relevante, el precio.
 
             \begin{figure}[H]
@@ -204,14 +194,13 @@ SHAP (SHapley Additive exPlanations) \ref{xai_shap} permite descomponer cada pre
             \label{fig:shap_dependence_lgb_precio}
             \end{figure}
 
-            En la imagen se observa que todos los puntos presentan valores SHAP negativos, comprendidos aproximadamente entre -0,03 y -0,01, independientemente del valor del precio. Esto significa que, al igual que en Random Forest y Gradient Boosting, la contribución del precio a la predicción es siempre negativa, lo que signiica que el modelo LightGBM asocia el precio del activo con una reducción sistemática del rendimiento previsto.
+            En la imagen se observa que todos los puntos presentan valores SHAP negativos, comprendidos aproximadamente entre -0,03 y -0,01, independientemente del valor del precio. Esto significa que, al igual que en Random Forest y Gradient Boosting, la contribución del precio a la predicción es siempre negativa, lo que significa que el modelo LightGBM asocia el precio del activo con una reducción sistemática del rendimiento previsto.
 
             A su vez, se aprecia una relación no lineal entre el precio y su impacto, al igual que en los modelos anteriores.
 
-            Sin embargo, al igual que en Gradient Boosting, en LGBM existen algunas variables con valores SHAP positivos que por tanto mejoran el rendimiento previsto. Algunas de estas variables son la inflación estadounidense con retardo de 1 y 3 meses y el retorno del ore también.
+            Sin embargo, al igual que en Gradient Boosting, en LGBM existen algunas variables con valores SHAP positivos que por tanto mejoran el rendimiento previsto. Algunas de estas variables son la inflación estadounidense con retardo de 1 y 3 meses y el retorno del oro también.
 
             \item \textbf{Análisis de una predicción individual}
-
             Por último, en la Figura \ref{fig:shap_waterfall_lgb} se muestra el gráfico waterfall para una predicción individual del modelo LightGBM.
 
             \begin{figure}[H]
@@ -240,7 +229,6 @@ SHAP (SHapley Additive exPlanations) \ref{xai_shap} permite descomponer cada pre
             A diferencia de los ejemplos anteriores, en LightGBM se observa una mayor cantidad de variables con contribuciones positivas, que en conjunto compensan ampliamente los impactos negativos del precio, la inflación pasada y los tipos del BCE, resultando en una predicción positiva del 4,9\%.
 
             \item \textbf{Conclusiones del análisis SHAP para LightGBM}
-
             Del análisis SHAP aplicado al modelo LightGBM se concluye que:
 
             \begin{itemize}
@@ -257,32 +245,18 @@ SHAP (SHapley Additive exPlanations) \ref{xai_shap} permite descomponer cada pre
     El análisis SHAP no se ha aplicado al modelo LSTM debido a su naturaleza de caja negra y a la complejidad computacional que conlleva interpretar redes neuronales recurrentes. Como se discute en el Capítulo 2, la limitada interpretabilidad es una de las principales desventajas de los modelos de Deep Learning frente a los métodos tradicionales. Por tanto, el análisis de interpretabilidad se ha centrado en los modelos de Machine Learning (Random Forest, Gradient Boosting y LightGBM), que son los que ofrecen un mejor equilibrio entre precisión predictiva y capacidad explicativa.
 
     \item \textbf{Conclusiones y comparativa de importancia entre modelos}
-
     Una vez presentados los resultados del análisis SHAP para los tres modelos de Machine Learning, se pueden extraer conclusiones globales y comparar el comportamiento de cada uno.
 
     \begin{enumerate}
-            \item \textbf{Comparativa entre modelos}
+        \item \textbf{Comparativa entre modelos}
+        La Tabla \ref{fig:comparativa_importancia_modelos} resume las principales diferencias y similitudes entre los tres modelos analizados.
 
-        La Tabla \ref{tab:comparativa_importancia_modelos} resume las principales diferencias y similitudes entre los tres modelos analizados.
-
-        \begin{table}[H]
+        \begin{figure}[H]
         \centering
-        \caption{Comparativa de los modelos según el análisis SHAP.}
-        \begin{tabular}{|l|c|c|c|}
-        \hline
-        \textbf{Aspecto} & \textbf{Random Forest} & \textbf{Gradient Boosting} & \textbf{LightGBM} \\
-        \hline
-        Variable más importante & Precio & Precio & Precio \\
-        \hline
-        Segunda variable más importante & tipos\_ecb & inflacion\_usa\_lag3 & tipos\_ecb \\
-        \hline
-        Tercera variable más importante & vix\_lag1 & vix\_lag1 & inflacion\_usa\_lag6 \\
-        \hline
-        Cuarta variable más importante & inflacion\_usa\_lag3 & inflacion\_usa & tipos\_fed \\
-        \hline
-        \end{tabular}
-        \label{tab:comparativa_importancia_modelos}
-        \end{table}
+        \includegraphics[width=0.9\textwidth]{imagenes/comparativa_importancia.png}
+        \caption{Comparativa de los modelos según el análisis SHAP. Fuente: elaboración propia.}
+        \label{fig:comparativa_importancia_modelos}
+        \end{figure}
 
         En todos los modelos, el precio es la variable más importante. Dicho precio tiene un impacto negativo en todos los modelos
 
@@ -290,53 +264,41 @@ SHAP (SHapley Additive exPlanations) \ref{xai_shap} permite descomponer cada pre
 
         \begin{itemize}
             \item \textbf{Random Forest} otorga un peso relevante a los tipos de interés del BCE, lo que sugiere que las condiciones monetarias europeas son especialmente relevantes para este modelo. La inflación estadounidense también aparece, pero en posiciones más secundarias. A su vez, es el modelo donde el precio tiene un impacto negativo de menor magnitud (hasta -0,019).
-
             \item \textbf{Gradient Boosting} destaca por dar un protagonismo especial a la inflación estadounidense, que aparece hasta en tres versiones diferentes. También es el modelo donde el precio tiene un impacto negativo más pronunciado (hasta -0,038), lo que indica que es más sensible a esta variable. El rendimiento del oro aparece entre las más importantes, a diferencia de Random Forest.
-
             \item \textbf{LightGBM} combina características de los dos anteriores: da importancia tanto a los tipos del BCE (como Random Forest) como a la inflación estadounidense (como Gradient Boosting). Además, es el único modelo donde el tipo de cambio euro-dólar aparece entre las variables que contribuyen a una predicción individual, lo que sugiere una mayor capacidad para aprovechar información de divisas.
         \end{itemize}
 
         \item \textbf{Importancia de las variables macroeconómicas y los retardos}
-        Antes de pasar a las conclusiones, es necesario hacer un pequeño inciso y ver la gran importancia que ha tenido la introducción delas vaiables macroeconómicas a los datasets. En el análisis SHAP ha confirmado la importancia de haber incluido variables macroeconómicas y sus versiones retardadas en los datasets de entrenamiento. Variables como la inflación estadounidense, los tipos de interés del BCE y de la Fed, y el rendimiento del oro aparecen consistentemente entre las más relevantes en los tres modelos. Esto valida la decisión de no limitarse únicamente a variables de mercado, ya que el contexto macroeconómico aporta información predictiva relevante.
+        Antes de pasar a las conclusiones, es necesario hacer un pequeño inciso y ver la gran importancia que ha tenido la introducción de las variables macroeconómicas a los datasets. En el análisis SHAP ha confirmado la importancia de haber incluido variables macroeconómicas y sus versiones retardadas en los datasets de entrenamiento. Variables como la inflación estadounidense, los tipos de interés del BCE y de la Fed, y el rendimiento del oro aparecen consistentemente entre las más relevantes en los tres modelos. Esto valida la decisión de no limitarse únicamente a variables de mercado, ya que el contexto macroeconómico aporta información predictiva relevante.
 
         \item \textbf{Conclusiones}
-
         Los resultados del análisis SHAP tienen implicaciones prácticas relevantes:
 
         \begin{enumerate}
             \item \textbf{La selección de variables realizada en el Capítulo 3 ha sido acertada}. La presencia de variables macroeconómicas y sus retardos entre las más importantes confirma que estas magnitudes contienen información predictiva útil más allá de las propias variables de mercado.
-
             \item \textbf{La inclusión de retardos es fundamental}. La aparición de variables con lag\_1, lag\_3 y lag\_6 en los top de importancia valida la decisión de construir un dataset específico para Machine Learning con versiones retardadas de las variables macroeconómicas.
-
             \item \textbf{No existe un modelo claramente superior en todos los aspectos}. Cada modelo tiene sus fortalezas: Random Forest es el más estable, Gradient Boosting el que mejor captura la inflación, y LightGBM el que combina lo mejor de ambos.
-
             \item \textbf{El precio del activo es universalmente relevante}. En los tres modelos, el precio es la variable más importante, y siempre con impacto negativo. Esto indica que, independientemente del algoritmo utilizado, el nivel de precio del activo es un predictor fundamental de su rendimiento futuro.
         \end{enumerate}
 
-        Más tarde e este capítulo, se someterá a los modelos a diferentes escenarios, de acuerdo a las conclusiones obtenidas en este analisis de SHAP.
-        
+        Más tarde en este capítulo, se someterá a los modelos a diferentes escenarios, de acuerdo a las conclusiones obtenidas en este análisis de SHAP.
     \end{enumerate}
 \end{enumerate}
 
 
 \subsection{Análisis con LIME}
-
 Aunque SHAP ha sido el método principal de interpretabilidad en este trabajo, se ha explorado también la técnica LIME para validar los resultados obtenidos. LIME, lo que hace es generar explicaciones locales aproximando el comportamiento del modelo en la vecindad de una instancia específica mediante un modelo más simple e interpretable.
 
 \subsubsection{Explicaciones locales para cada modelo}
-
 Las explicaciones LIME obtenidas para los tres modelos de Machine Learning fueron consistentes con los resultados de SHAP. En todos los casos, las variables identificadas como más influyentes en las predicciones individuales fueron las mismas.
 
 \begin{itemize}
     \item \textbf{Random Forest}: LIME identificó el precio y la inflación como los principales factores negativos, coincidiendo con lo observado en SHAP. La predicción del modelo fue de -0,0098, igual que la obtenida en SHAP (-0.01).
-
     \item \textbf{Gradient Boosting}: En este caso, el modelo predijo un valor positivo de 0,0561, igual que en SHAP (0.056). A su vez, LIME señala que las variables que más contribuyeron positivamente fueron el bajo desempleo. la volatilidad con seis y tres meses de retardo. Por otro lado, el precio, la inflación con seis y tres meses de retardo, y los tipos de interés de la Fed actuaron como factores negativos. Estos resultados son consistentes con el análisis SHAP, donde se observó que Gradient Boosting otorga un peso especial a la inflación.
-
-    \item \textbf{LightGBM}: El modelo predijo un valor de 0,0489, igual que en SHAP (0.049). Del mismo modo, LIME muestra una mayor cantidad de variables con contribuciones positivas, lo que confirma la observación de SHAP de que LightGBM utiliza un mayor número de variables para construir sus predicciones.En este  analisis de LIME, algunas de las variables que actuaron como factores negativos, fueron el precio, la inflación con seis meses de retardo y los tipos del BCE.
+    \item \textbf{LightGBM}: El modelo predijo un valor de 0,0489, igual que en SHAP (0.049). Del mismo modo, LIME muestra una mayor cantidad de variables con contribuciones positivas, lo que confirma la observación de SHAP de que LightGBM utiliza un mayor número de variables para construir sus predicciones.En este  análisis de LIME, algunas de las variables que actuaron como factores negativos, fueron el precio, la inflación con seis meses de retardo y los tipos del BCE.
 \end{itemize}
 
 \subsubsection{Comparativa SHAP vs LIME}
-
 Ambos métodos mostraron resultados consistentes, identificando las mismas variables como las más relevantes en cada predicción individual. En particular:
 
 \begin{itemize}
@@ -348,19 +310,221 @@ Ambos métodos mostraron resultados consistentes, identificando las mismas varia
 
 La principal diferencia práctica entre ambos métodos es que SHAP proporciona propiedades matemáticas más sólidas (consistencia, aditividad) y permite análisis global y local, mientras que LIME se limita a explicaciones locales. Por estas razones, SHAP ha sido el método principal en este trabajo, utilizando LIME únicamente como validación de los hallazgos.
 
-\section{Impacto de las variables macroeconómicas}
+\section{Discusión del modelo}
+Atendiendo a los valores obtenidos en el análisis de interpretabilidad del apartado anterior, se someterá al modelo a diferentes simulaciones con el objetivo de justificar las decisiones de diseño tomadas a lo largo del trabajo, especialmente la inclusión de variables macroeconómicas y la selección de variables realizada en el Capítulo 3.
 
-\subsection{Configuración experimental}
-\subsection{Resultados comparativos por modelo}
-\subsection{Discusión de los hallazgos}
+Antes de comenzar, mencionar que en los experimentos se han usado los mismos codigos, con la misma estructura y parametros que se usaron en el capítulo 4. Lo único que cambiará, serán los datasets utilizados, los cuales estarán adaptados a las diferentes situaciones.
 
-\section{Experimentación con escenarios hipotéticos}
+\begin{enumerate}
+    \item \textbf{Impacto de las variables macroeconómicas}
+    En el Capítulo 2, se mencionó que las variables macroeconómicas aportan una gran información a la hora de predecir el retorno futuro de un activo. A su vez, en el análisis de interpretabilidad se ha visto cómo estas variables macro tenían una gran importancia en las predicciones de los modelos, apareciendo consistentemente entre las más relevantes en los tres modelos analizados (inflación, tipos de interés, desempleo, etc.).
+    
+    Teniendo en cuenta todo lo mencionado, se ha sometido a los modelos a un entrenamiento y backtesting sobre un dataset que contiene únicamente las variables del propio activo (precio, medias móviles, volatilidad, momentum y retardos del target), eliminando por completo todas las variables macroeconómicas. De este modo, se puede ver el impacto real que estas variables tienen sobre la capacidad predictiva de los modelos.
+    
+    \begin{itemize}
+        \item \textbf{Resultados para Random Forest}
+        En la Tabla \ref{tab:experimento_rf} se muestra la comparativa de resultados para Random Forest entre la configuración original (con variables macro) y la configuración del experimento (sin variables macro).
 
-\subsection{Escenarios dinámicos vs estáticos}
-\subsection{Escenarios de estrés económico}
-\subsection{Análisis de sensibilidad por modelo}
-\subsection{Escenarios con datasets de frecuencia diaria}
+        \begin{table}[H]
+        \centering
+        \caption{Comparativa de resultados para Random Forest: original vs sin macro. Fuente de elaboración propia}
+        \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{Métrica} & \textbf{Original} & \textbf{Sin macro} \\
+        \hline
+        \multicolumn{3}{|c|}{\textit{Conjunto de entrenamiento}} \\
+        \hline
+        MAE & 0,0741 & 0,0737 \\
+        RMSE & 0,0888 & 0,0855 \\
+        R² & -0,1660 & -0,0804 \\
+        DA & 46,15\% & 50,00\% \\
+        \hline
+        \multicolumn{3}{|c|}{\textit{Conjunto de validación}} \\
+        \hline
+        MAE & 0,0477 & 0,0496 \\
+        RMSE & 0,0579 & 0,0589 \\
+        R² & -0,0001 & -0,0352 \\
+        DA & 59,26\% & 59,26\% \\
+        \hline
+        \multicolumn{3}{|c|}{\textit{Backtesting (media ± desviación)}} \\
+        \hline
+        MAE & 0,0663 ± 0,0355 & 0,0727 ± 0,0266 \\
+        RMSE & 0,0786 ± 0,0377 & 0,0834 ± 0,0268 \\
+        R² & -0,0399 ± 0,1664 & -0,2582 ± 0,2322 \\
+        DA & 58,33\% ± 35,36\% & 41,67\% ± 11,79\% \\
+        \hline
+        \end{tabular}
+        \label{tab:experimento_rf}
+        \end{table}
 
-\section{Discusión global de los resultados obtenidos}
+        Se observa que, en el conjunto de validación, las diferencias son relativamente pequeñas, el R² pasa de -0,0001 a -0,0352, y la directional accuracy se mantiene en 59,26\%. Sin embargo, en el backtesting las diferencias son más notables. El R² medio empeora significativamente, pasando de -0,0399 a -0,2582, y la directional accuracy media cae del 58,33\% al 41,67\%. Esto indica que, aunque el modelo sin macro puede tener un rendimiento aceptable, su capacidad de generalización a diferentes períodos históricos se ve seriamente comprometida al eliminar las variables macroeconómicas.
+
+        En cuanto a las gráficas de predicción versus valor real, ambas configuraciones presentan un aspecto similar, con la diferencia de que las predicciones del modelo sin macro tienden a estar más cerca de la media histórica, lo que refleja una menor capacidad para capturar los movimientos extremos del mercado.
+
+        \item \textbf{Resultados para Gradient Boosting}
+        La Tabla \ref{tab:experimento_gb} muestra la comparativa de resultados para Gradient Boosting.
+
+        \begin{table}[H]
+        \centering
+        \caption{Comparativa de resultados para Gradient Boosting: original vs sin macro. Fuente de elaboración propia}
+        \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{Métrica} & \textbf{Original} & \textbf{Sin macro} \\
+        \hline
+        \multicolumn{3}{|c|}{\textit{Conjunto de entrenamiento}} \\
+        \hline
+        MAE & 0,0843 & 0,0636 \\
+        RMSE & 0,0991 & 0,0773 \\
+        R² & -0,4511 & 0,1161 \\
+        DA & 42,31\% & 57,69\% \\
+        \hline
+        \multicolumn{3}{|c|}{\textit{Conjunto de validación}} \\
+        \hline
+        MAE & 0,0437 & 0,0567 \\
+        RMSE & 0,0531 & 0,0698 \\
+        R² & 0,1574 & -0,4525 \\
+        DA & 62,96\% & 55,56\% \\
+        \hline
+        \multicolumn{3}{|c|}{\textit{Backtesting (media ± desviación)}} \\
+        \hline
+        MAE & 0,0729 ± 0,0378 & 0,0717 ± 0,0086 \\
+        RMSE & 0,0865 ± 0,0409 & 0,0872 ± 0,0133 \\
+        R² & -0,1832 ± 0,2970 & -0,7459 ± 0,3830 \\
+        DA & 41,67\% ± 23,57\% & 36,67\% ± 12,58\% \\
+        \hline
+        \end{tabular}
+        \label{tab:experimento_gb}
+        \end{table}
+
+        En el caso de Gradient Boosting, el deterioro al eliminar las variables macro es mucho más pronunciado que en Random Forest. En el conjunto de validación, el R² cae de 0,1574 a -0,4525 y la directional accuracy desciende del 62,96\% al 55,56\%. Mientras tanto, en el backtesting, el R² medio pasa de -0,1832 a -0,7459, y la directional accuracy media cae del 41,67\% al 36,67\%, indicando asi una bajada de rendimeinto brutal.
+
+        La diferencia más notable se aprecia en las gráficas de predicción versus valor real. Mientras que el modelo original de Gradient Boosting mostraba un seguimiento razonable de la tendencia real, el modelo sin macro produce predicciones prácticamente horizontales, centradas en la media histórica, lo que indica una pérdida total de capacidad predictiva.
+
+        \item \textbf{Resultados para LightGBM}
+        La Tabla \ref{tab:experimento_lgb} muestra la comparativa de resultados para LightGBM entre la configuración original (con variables macro) y la configuración del experimento (sin variables macro).
+
+        \begin{table}[H]
+        \centering
+        \caption{Comparativa de resultados para LightGBM de original vs sin macro. Fuente de elaboración propia}
+        \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{Métrica} & \textbf{Original} & \textbf{Sin macro} \\
+        \hline
+        \multicolumn{3}{|c|}{\textit{Conjunto de entrenamiento}} \\
+        \hline
+        MAE & 0,0852 & 0,0744 \\
+        RMSE & 0,1013 & 0,0951 \\
+        R² & -0,5171 & -0,3361 \\
+        DA & 34,62\% & 57,69\% \\
+        \hline
+        \multicolumn{3}{|c|}{\textit{Conjunto de validación}} \\
+        \hline
+        MAE & 0,0385 & 0,0579 \\
+        RMSE & 0,0495 & 0,0758 \\
+        R² & 0,2688 & -0,7161 \\
+        DA & 77,78\% & 55,56\% \\
+        \hline
+        \multicolumn{3}{|c|}{\textit{Backtesting (media ± desviación)}} \\
+        \hline
+        MAE & 0,0595 ± 0,0172 & 0,0851 ± 0,0355 \\
+        RMSE & 0,0725 ± 0,0200 & 0,0989 ± 0,0356 \\
+        R² & -0,0544 ± 0,0861 & -0,6033 ± 0,0102 \\
+        DA & 57,69\% ± 10,88\% & 37,50\% ± 5,89\% \\
+        \hline
+        \end{tabular}
+        \label{tab:experimento_lgb}
+        \end{table}
+
+        LightGBM es, de todos los modelos de Machine Learning, el que sufre una degradación más severa al eliminar las variables macroeconómicas. En el conjunto de validación, el R² pasa de un sólido 0,2688 (el mejor de todos los modelos) a un -0,7161, y la directional accuracy cae del excepcional 77,78\% al 55,56\%, perdiendo más de 22 puntos porcentuales.
+
+        En el backtesting, el deterioro es aún más evidente. El R² medio pasa de -0,0544 a -0,6033, y la directional accuracy media cae del 57,69\% al 37,50\%, situándose muy por debajo del azar. Esto confirma lo observado en el análisis SHAP, LightGBM era el modelo que más variables utilizaba en sus predicciones y el que mejor rendimiento alcanzaba en la configuración original, precisamente porque era capaz de aprovechar la información macroeconómica de manera más eficaz que los demás modelos.
+
+        \item \textbf{Resultados para LSTM}
+        En la Tabla \ref{tab:experimento_lstm} se muestra la comparativa de resultados para la red LSTM.
+
+        \begin{table}[H]
+        \centering
+        \caption{Comparativa de resultados para LSTM de original vs sin macro. Fuente de elaboración propia}
+        \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{Métrica} & \textbf{Original} & \textbf{Sin macro} \\
+        \hline
+        \multicolumn{3}{|c|}{\textit{Conjunto de entrenamiento}} \\
+        \hline
+        Loss & 0,0984 & 0,0966 \\
+        MAE & 0,2467 & 0,2438 \\
+        \hline
+        \multicolumn{3}{|c|}{\textit{Conjunto de validación}} \\
+        \hline
+        MAE & 0,0509 & 0,0723 \\
+        RMSE & 0,0603 & 0,0898 \\
+        R² & 0,0396 & -1,1262 \\
+        DA & 61,11\% & 53,70\% \\
+        \hline
+        \multicolumn{3}{|c|}{\textit{Backtesting (media ± desviación)}} \\
+        \hline
+        MAE & 0,0723 ± 0,0294 & 0,0886 ± 0,0364 \\
+        RMSE & 0,0849 ± 0,0337 & 0,1028 ± 0,0395 \\
+        R² & -0,8073 ± 0,9785 & -2,4345 ± 3,7019 \\
+        DA & 47,83\% ± 19,01\% & 54,35\% ± 28,96\% \\
+        \hline
+        \multicolumn{3}{|c|}{\textit{Backtesting (métricas globales)}} \\
+        \hline
+        MAE & 0,0723 & 0,0886 \\
+        RMSE & 0,0910 & 0,1099 \\
+        R² & -0,3863 & -1,0191 \\
+        DA & 47,83\% & 54,35\% \\
+        \hline
+        \end{tabular}
+        \label{tab:experimento_lstm}
+        \end{table}
+
+        La LSTM, que ya de por sí presentaba un rendimiento limitado en la configuración original debido al reducido tamaño del dataset, empeora notablemente al eliminar las variables macro. En el conjunto de validación, el R² cae de 0,0396 a -1,1262 y el MAE aumenta de 0,0509 a 0,0723.
+
+        En el backtesting, el R² medio pasa de -0,8073 a -2,4345, lo que indica una pérdida total de capacidad predictiva. 
+
+        \item \textbf{Conclusiones del experimento}
+        Los resultados obtenidos confirman que la inclusión de variables macroeconómicas mejora el rendimiento de todos los modelos evaluados. LightGBM es el modelo que más se beneficia de su inclusión, mejorando su R² en validación de -0,7161 a 0,2688 y su directional accuracy del 55,56\% al 77,78\%. Gradient Boosting también experimenta una mejora significativa, mientras que Random Forest se muestra como el modelo más robusto ante la ausencia de estas variables. Por último, la LSTM, aunque limitada por el reducido tamaño del dataset, también empeora su rendimiento al eliminar las variables macro. En definitiva, los resultados validan la decisión de incluir variables macroeconómicas en los modelos predictivos, ya que aportan información relevante y mejoran tanto la precisión como la robustez temporal de las predicciones.
+
+    \end{itemize}
+
+    \item \textbf{Impacto de la selección de variables}
+        En el Capítulo 3 se realizó un proceso de selección de variables (A partir de la función \textbf{seleccion\_variables}) con el objetivo de eliminar aquellas redundantes o con poca capacidad predictiva, reduciendo así el ruido y mejorando el rendimiento de los modelos. Para validar esta decisión, se han entrenado los modelos con el dataset completo (sin selección de variables) y se han comparado los resultados con los obtenidos en el Capítulo 4, donde se utilizó el dataset optimizado para cada modelo.
+
+        La Tabla \ref{fig:experimento_seleccion} muestra la comparativa de resultados para los cuatro modelos evaluados.
+
+        \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\textwidth]{imagenes/experimento_seleccion.png}
+        \caption{Comparativa de resultados: con selección de variables vs sin selección. Fuente: elaboración propia.}
+        \label{fig:experimento_seleccion}
+        \end{figure}
+        
+        \begin{itemize}
+            \item \textbf{Conclusiones del experimento}
+            Los resultados confirman que la selección de variables realizada en el Capítulo 3 fue beneficiosa para todos los modelos. LightGBM es el que más mejora con la selección de variables, pasando de un R² de -0,5151 a 0,2688 en validación, y mejorando su directional accuracy en backtesting del 41,67\% al 57,69\%. Gradient Boosting también experimenta una mejora significativa, elevando su R² en validación de -0,2916 a 0,1574. Random Forest, aunque más robusto, también mejora sus métricas. Por último, la LSTM, ve su R² en validación mejorar drásticamente de -3,0768 a 0,0396. En definitiva, eliminar variables redundantes y ruidosas mediante un proceso de selección adecuado mejora la capacidad predictiva de los modelos y reduce el sobreajuste.
+        \end{itemize}
+
+        \item \textbf{Importancia del precio}
+        Como se vió en el análisis de interpretabilidad, la variable que más importancia aporta a los modelos, es el precio. Por ello mismo, en esta sección, se someterá a los modelos a un entrenamiento y backtesting sobre los datasets optimizados para cada modelo, pero sin la variable precio.
+
+        En la siguiente Tabla \ref{fig:experimento_sin_precio}, se ve la comparativa de las métricas sin modificaciones y las métricas obtenidas para este experimento
+
+        \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\textwidth]{imagenes/experimento_sin_precio.png}
+        \caption{Impacto de eliminar la variable precio en los modelos de Machine Learning. Fuente: elaboración propia.}
+        \label{fig:experimento_sin_precio}
+        \end{figure}
+
+        Los resultados confirman que el precio es una variable fundamental para los modelos. LightGBM es el más afectado, con una caída del R² en validación de 0,2688 a -0,7227. Random Forest y Gradient Boosting también empeoran, aunque de forma menos pronunciada. En el caso de los backtesting, los resultados también empeoran en los 3 modelos. Estos resultados anteriores, validan lo observado en el análisis SHAP, donde el precio aparecía consistentemente como el predictor más importante en los tres modelos.
+        
+        Por otro lado, este experimento no se ha realizado sobre LSTM, ya que el análisis SHAP no se aplicó a este modelo al tratarse de una caja negra.
+
+        \item \textbf{Simulación de escenarios}
+
+        \item \textbf{Predicciones sobre otro activo}
+
+    \end{enumerate}
 
 \section{Conclusiones del capítulo}

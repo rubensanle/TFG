@@ -474,15 +474,6 @@ En la Figura \ref{fig:lstm_backtesting_evolucion} se muestra la evolución de la
 \label{fig:lstm_backtesting_evolucion}
 \end{figure}
 
-En la Figura \ref{fig:lstm_backtesting_real_vs_pred} se presenta la comparativa entre predicciones y valores reales para todas las ventanas de prueba agregadas. Se aprecia que el modelo tiende a predecir valores menos extremos que los reales, con predicciones que se concentran en un rango más estrecho en torno a cero. Esta característica, conocida como \textit{regresión a la media}, es común en modelos entrenados con datos financieros de alta volatilidad.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{imagenes/lstm_backtesting_real_vs_pred.png}
-\caption{Comparativa entre todas las predicciones del backtesting y los valores reales del rendimiento. Fuente de elaboración propia}
-\label{fig:lstm_backtesting_real_vs_pred}
-\end{figure}
-
 \subsection{Comparativa global}
 Una vez presentados los resultados individuales de cada modelo, en esta sección, lo que se hará es analizar de forma conjunta las prestaciones ofrecidas por cada arquitectura. Es importante mencionar que en esta sección, no se trata de elegir un modelo sobre otro, sino de comprender qué aporta cada enfoque y en qué contextos puede resultar más adecuado.
 
