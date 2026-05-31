@@ -1,14 +1,17 @@
 \chapter*{Resumen}
+Este Trabajo de Fin de Grado aborda la predicción del rendimiento mensual de Apple (AAPL) mediante técnicas de Machine Learning y Deep Learning, para dicha predicción, se han incorporado un amplio número de variables tanto macroeconómicas como financieras. En cuanto a los objetivos del trabajo, se pretende determinar hasta qué punto es posible anticipar el comportamiento de un activo financiero utilizando información macroeconómica y algoritmos de aprendizaje automático, identificar qué variables resultan más influyentes en dichas predicciones y establecer para qué contexto o situación resulta más adecuado cada modelo.
 
-\todo[inline]{Aquí va el resumen del trabajo. Extensión máxima 2 páginas.}
+Para ello, se ha diseñado e implementado un pipeline completo de procesamiento de datos que incluye la obtención de datos históricos de variables macroeconómicas y financieras desde Yahoo Finance y de fuentes macroeconómicas oficiales como la Reserva Federal, más adelante se aplicó \emph{feature enginering} sobre ciertas variables, con el objetivo de generar nuevas variables que aportasen información. Una vez obtenidos todos los datos, se realizó un análisis exploratorio con R sobre todas las variables, con el objetivo de entenderlas mejor y a su vez, poder definir periodos en funnción del comportamiento de estas variables. Una vez finalizado el análisis, se llevó a cabo una selección de variables de acuerdo a los resultados obtenidos anteriormente. De dicha selección de variables, surgen los dos datasets diferenciados, uno para Machine Learning con retardos de las variables macroeconómicas, y otro para Deep Learning sin retardos, aprovechando la memoria temporal de las redes LSTM.
+
+En cuanto a los modelos predictivos, se implementaron Random Forest, Gradient Boosting, LightGBM y una red LSTM. Cada modelo ha aprendido mediante búsqueda de hiperparámetros con validación cruzada temporal, respetando el orden cronológico de los datos. La evaluación se realizó sobre un conjunto de prueba independiente y mediante backtesting con ventana deslizante, lo que permitió analizar la robustez temporal de cada modelo. En el caso de LSTM, también ha sido necesario aplicar técnicas de regularización como data augmentation y Gaussian noise para evitar el sobreajuste, dada la limitación del tamaño del dataset.
 
 \begin{otherlanguage}{english}
   \chapter*{Abstract}
 
-  \todo[inline]{Abstract of the Final Degree Project. Maximum length: 2 pages.}
+This Final Degree Project addresses the prediction of Apple's (AAPL) monthly return using Machine Learning and Deep Learning techniques, incorporating a wide range of both macroeconomic and financial variables. Regarding the objectives of the work, it aims to determine to what extent it is possible to anticipate the behavior of a financial asset using macroeconomic information and machine learning algorithms, to identify which variables are most influential in these predictions, and to establish for which context or situation each model is most suitable.
+
+To achieve this, a complete data processing pipeline has been designed and implemented, including the collection of historical data from Yahoo Finance and official macroeconomic sources such as the Federal Reserve. Subsequently, \emph{feature enginering} was applied to certain variables in order to generate new variables that could provide additional information. Once all the data was obtained, an exploratory analysis was carried out using R to better understand the variables and to define periods based on their behavior. After this analysis, a variable selection process was carried out according to the previously obtained results. From this selection, two differentiated datasets emerged: one for Machine Learning with lags of the macroeconomic variables, and another for Deep Learning without lags, taking advantage of the temporal memory of LSTM networks.
+
+Regarding the predictive models, Random Forest, Gradient Boosting, LightGBM and an LSTM network were implemented. Each model was taught through hyperparameter search with temporal cross-validation, respecting the chronological order of the data. The evaluation was performed on an independent test set and through sliding window backtesting, which allowed analyzing the temporal robustness of each model. In the case of the LSTM, it was also necessary to apply regularization techniques such as data augmentation and Gaussian noise to avoid overfitting, given the limited dataset size.
+
 \end{otherlanguage}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Final del resumen.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

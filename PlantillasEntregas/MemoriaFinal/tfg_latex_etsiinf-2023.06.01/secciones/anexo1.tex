@@ -1,2 +1,462 @@
-\chapter{Primer anexo}
-Este capítulo (anexo) es opcional, y se escribirá de acuerdo con las indicaciones del Tutor.
+\chapter{Anexo}
+
+\section{Código de imputación de valores faltantes}
+\label{sec:codigo_imputacion}
+\begin{lstlisting}[language=Python, caption=Función para imputar valores faltantes, label=lst:imputar_valores]
+def imputar_valores_faltantes(dataframe, nombre_columna=None):
+    if isinstance(dataframe, pd.Series): 
+        serie_imputada = dataframe.copy()
+    elif isinstance(dataframe, pd.DataFrame):
+        if nombre_columna is not None: 
+            serie_imputada = dataframe[nombre_columna].copy()
+        elif dataframe.shape[1] == 1:
+            serie_imputada = dataframe.iloc[:, 0].copy()
+        else:
+            raise ValueError("Debes especificar 'nombre_columna'")
+    else:
+        raise TypeError("Input debe ser DataFrame o Series")
+
+    serie_imputada = pd.to_numeric(serie_imputada, errors='coerce') 
+
+    valores_cero = (serie_imputada == 0) 
+    valores_nan = serie_imputada.isna() 
+    total_a_imputar = valores_cero.sum() + valores_nan.sum() 
+
+    serie_imputada[valores_cero] = np.nan 
+
+    if total_a_imputar == 0: 
+        return serie_imputada
+
+    # Método 1: Interpolación lineal
+    metodo1 = serie_imputada.interpolate(method='linear', limit_direction='both') 
+
+    # Método 2: Medias móviles ponderadas
+    media_3m = serie_imputada.rolling(window=3, center=True, min_periods=1).mean() 
+    media_6m = serie_imputada.rolling(window=6, center=True, min_periods=1).mean() 
+    metodo2 = media_3m * 0.7 + media_6m * 0.3 
+
+    # Método 3: Forward/backward fill
+    ffill = serie_imputada.ffill() 
+    bfill = serie_imputada.bfill() 
+    metodo3 = ffill.fillna(bfill)
+
+    mask = serie_imputada.isna() 
+    valores_nulos = np.where(mask)[0] 
+
+    for valor in valores_nulos:
+        valores_metodo = []
+        pesos = []
+
+        if valor < len(metodo1) and not pd.isna(metodo1.iloc[valor]): 
+            valores_metodo.append(metodo1.iloc[valor])
+            pesos.append(0.50)
+
+        if valor < len(metodo2) and not pd.isna(metodo2.iloc[valor]): 
+            valores_metodo.append(metodo2.iloc[valor])
+            pesos.append(0.30)
+
+        if valor < len(metodo3) and not pd.isna(metodo3.iloc[valor]): 
+            valores_metodo.append(metodo3.iloc[valor])
+            pesos.append(0.20)
+  
+        if valores_metodo:
+            pesos_normalizados = np.array(pesos) / np.sum(pesos)
+            valor_imputado = np.average(valores_metodo, weights=pesos_normalizados)
+            serie_imputada.iloc[valor] = valor_imputado
+
+    if serie_imputada.isna().any(): 
+        serie_imputada = serie_imputada.interpolate(method='linear', limit_direction='both')
+
+    if serie_imputada.isna().any(): 
+        serie_imputada = serie_imputada.ffill()
+        serie_imputada = serie_imputada.bfill()
+
+    return serie_imputada
+\end{lstlisting}
+
+\section{Código de selección de variables}
+\label{sec:codigo_seleccion_variables}
+\begin{lstlisting}[language=Python, caption=Función para seleccionar variables, label=lst:seleccion_variables]
+def seleccion_variables(df, target='target', 
+                        umbral_mi_percentil=50,
+                        umbral_correlacion=0.85,
+                        n_bins=10,
+                        random_state=42):
+
+    variables_forzadas = [
+        'sp500_return', 'vix', 'tipos_fed', 
+        'curva10Y2Y', 'inflacion_usa', 'activo_return'
+    ]
+    
+
+    X = df.select_dtypes(include=[np.number]).drop(columns=[target]) 
+    y = df[target] 
+
+    # Discretizar X
+    discretizer = KBinsDiscretizer(n_bins=n_bins, 
+                    encode='ordinal', strategy='uniform') 
+    X_discrete = discretizer.fit_transform(X) 
+    X_discrete = pd.DataFrame(X_discrete, 
+                        columns=X.columns, index=X.index) 
+    
+    # Discretizar y 
+    y_discrete = pd.cut(y, bins=n_bins, labels=False)
+    
+    # Calcular MI con variables discretas
+    mi_scores = mutual_info_regression(X_discrete, 
+                    y_discrete, random_state=random_state) 
+    
+    mi_df = pd.DataFrame({
+        'variable': X.columns,
+        'mi_score': mi_scores
+    }).sort_values('mi_score', ascending=False) 
+
+    for i, row in mi_df.head(15).iterrows():
+        print(f"{row['variable']:25s} {row['mi_score']:.6f}")
+    
+    
+        
+    mi_dict = dict(zip(mi_df['variable'], mi_df['mi_score'])) 
+    vars_ordenadas = mi_df['variable'].tolist()
+    
+    variables_sin_corr = []
+    matriz_corr = X.corr().abs() 
+    
+    for var in vars_ordenadas: 
+        es_redundante = False
+        
+        for selected in variables_sin_corr: 
+            corr_val = matriz_corr.loc[var, selected]
+            if corr_val > umbral_correlacion:
+                es_redundante = True
+                break
+        
+        if not es_redundante: 
+            variables_sin_corr.append(var)
+    
+    
+    n_vars = len(variables_sin_corr) 
+    umbral_index = int(np.ceil(n_vars * umbral_mi_percentil / 100)) 
+
+    vars_seleccionadas = variables_sin_corr[:umbral_index] 
+
+    for var in variables_forzadas:
+        if var in X.columns and var not in vars_seleccionadas:
+            vars_seleccionadas.append(var)
+    
+    print(f"\nVariables seleccionadas:")
+    for i, var in enumerate(vars_seleccionadas, 1):
+        mi_val = mi_dict.get(var, 0)
+        es_forzada = " [FORZADA]" if var in variables_forzadas else ""
+        print(f"   {i:2d}. {var:30s} (MI: {mi_val:.6f}){es_forzada}")
+
+    dataset_final = df[vars_seleccionadas + [target]].copy()
+    
+    return dataset_final
+
+    #Llamada a la función:
+    dataset_optmizado = seleccion_variables(dataset, target='target') 
+\end{lstlisting}
+
+\section{Variables del dataset final DL}
+\label{sec:variables_dataset_finaldl}
+\begin{table}[H]
+\centering
+\begin{tabular}{|p{5cm}|p{9.5cm}|}
+\hline
+\textbf{Variable} & \textbf{Descripción} \\
+\hline
+oro\_return & Retorno mensual del oro \\
+\hline
+precio & Precio mensual del activo \\
+\hline
+activo\_return & Rendimiento pasado del activo (forzada) \\
+\hline
+inflacion\_usa & Inflación de Estados Unidos (forzada) \\
+\hline
+volatilidad\_6m & Volatilidad móvil a 6 meses del rendimiento de Apple \\
+\hline
+lag\_3 & Retraso de 3 meses del rendimiento de Apple \\
+\hline
+tipos\_ecb & Tipos de interés de la Reserva Federal \\
+\hline
+eurusd & Relación EUR/USD \\
+\hline
+desempleo & Tasa de desempleo \\
+\hline
+sp500\_return & Retorno mensual del S\&P 500 (forzada) \\
+\hline
+vix & Índice de volatilidad VIX (forzada) \\
+\hline
+tipos\_fed & Tipos de interés de la Reserva Federal (forzada) \\
+\hline
+curva10Y2Y & Diferencial bono 10 años - 2 años (forzada) \\
+\hline
+target & Variable a predecir \\
+\hline
+\end{tabular}
+\label{tab:variables_dataset_finaldl}
+\caption{Variables del dataset final. Fuente: elaboración propia.}
+\end{table}
+
+\section{Variables del dataset final ML}
+\label{sec:variables_dataset_finalml}
+\begin{table}[H]
+\centering
+\begin{tabular}{|p{5cm}|p{9.5cm}|}
+\hline
+\textbf{Variable} & \textbf{Descripción} \\
+\hline
+oro\_return & Retorno mensual del oro \\
+\hline
+precio & Precio mensual del activo \\
+\hline
+activo\_return & Rendimiento pasado del activo (forzada) \\
+\hline
+inflacion\_usa & Inflación de Estados Unidos (forzada) \\
+\hline
+inflacion\_usa\_lag1 & Inflación de Estados Unidos con retraso de 1 mes \\
+\hline
+inflacion\_usa\_lag3 & Inflación de Estados Unidos con retraso de 3 meses \\
+\hline
+inflacion\_usa\_lag6 & Inflación de Estados Unidos con retraso de 6 meses \\
+\hline
+volatilidad\_6m & Volatilidad móvil a 6 meses del rendimiento de Apple \\
+\hline
+lag\_3 & Retraso de 3 meses del rendimiento de Apple \\
+\hline
+tipos\_ecb & Tipos de interés de la Reserva Federal \\
+\hline
+eurusd & Relación EUR/USD \\
+\hline
+desempleo & Tasa de desempleo \\
+\hline
+desempleo\_lag1 & Tasa de desempleo con retraso de 1 mes \\
+\hline
+desempleo\_lag3 & Tasa de desempleo con retraso de 3 meses \\
+\hline
+sp500\_return & Retorno mensual del S\&P 500 (forzada) \\
+\hline
+vix & Índice de volatilidad VIX (forzada) \\
+\hline
+vix\_lag1 & Índice de volatilidad VIX con retraso de 1 mes \\
+\hline
+vix\_lag2 & Índice de volatilidad VIX con retraso de 2 meses \\
+\hline
+vix\_lag3 & Índice de volatilidad VIX con retraso de 3 meses \\
+\hline
+tipos\_fed & Tipos de interés de la Reserva Federal (forzada) \\
+\hline
+tipos\_fed\_lag1 & Tipos de interés de la Reserva Federal con retraso de 1 mes (forzada) \\
+\hline
+tipos\_fed\_lag3 & Tipos de interés de la Reserva Federal con retraso de 3 meses (forzada) \\
+\hline
+tipos\_fed\_lag6 & Tipos de interés de la Reserva Federal con retraso de 6 meses (forzada) \\
+\hline
+curva10Y2Y & Diferencial bono 10 años - 2 años (forzada) \\
+\hline
+curva10Y2Y\_lag1 & Diferencial bono 10 años - 2 años con retraso de 1 mes \\
+\hline
+curva10Y2Y\_lag3 & Diferencial bono 10 años - 2 años con retraso de 3 meses \\
+\hline
+target & Variable a predecir \\
+\hline
+\end{tabular}
+\label{tab:variables_dataset_finalml}
+\caption{Variables del dataset final. Fuente: elaboración propia.}
+\end{table}
+
+\section{Código de partición temporal de los datos}
+\label{sec:codigo_particion_datos}
+\begin{lstlisting}[language=Python, caption=Función para la partición temporal de los datos, label=lst:split]
+def division_conjuntos(dataframe, tr_size=0.8, vl_size=0.1, ts_size=0.1):
+    N = dataframe.shape[0]
+    Ntrain = int(tr_size * N)
+    Nval = int(vl_size * N)
+    
+    train = dataframe.iloc[:Ntrain]
+    val = dataframe.iloc[Ntrain:Ntrain+Nval]
+    test = dataframe.iloc[Ntrain+Nval:]
+    
+    return train, val, test
+
+    #Llamada a la función
+    tr, vl, ts = division_conjuntos(df) 
+
+    X_train = tr.drop(columns=['target']) 
+    y_train = tr['target']
+
+    X_val = vl.drop(columns=['target']) +
+    y_val = vl['target']
+
+    X_test = ts.drop(columns=['target']) 
+    y_test = ts['target']
+\end{lstlisting}
+
+\section{Código de GridSearch para Random Forest}
+\label{sec:codigo_grid_search_rf}
+\begin{lstlisting}[language=Python, caption=Implementación del GridSearch para Random Forest, label=lst:grid_search_rf]
+    param_grid_rf = {
+    'n_estimators': [100, 200, 300], 
+    'max_depth': [5, 10, 15, 20, None], 
+    'min_samples_split': [2, 5, 10, 12], 
+    'min_samples_leaf': [1, 2 ,4], 
+    'max_features': ['sqrt', 'log2', None]
+    } 
+
+    ts_cv = TimeSeriesSplit(n_splits=3) 
+
+    # Inicializar el modelo
+    rf = RandomForestRegressor(random_state=42, n_jobs=-1) 
+
+    grid_search_rf = GridSearchCV(
+        estimator=rf,
+        param_grid=param_grid_rf,
+        cv=ts_cv,
+        scoring=da_scorer,
+        verbose=1,
+        n_jobs=-1
+    )  
+
+    # Ajustar la búsqueda
+    grid_search_rf.fit(X_train, y_train) 
+\end{lstlisting}
+
+\section{Código de entrenamiento y calibración de Random Forest}
+\label{sec:codigo_entrenamiento_rf}
+\begin{lstlisting}[language=Python, caption=Implementación de Random Forest Regressor, label=lst:regresor_rf]
+    best_rf = RandomForestRegressor(**grid_search_rf.best_params_,
+                                         random_state=42, n_jobs=-1) 
+    best_rf.fit(X_train, y_train) 
+
+    y_pred_val_raw = best_rf.predict(X_val) 
+
+    calibrator_rf = IsotonicRegression(out_of_bounds='clip')
+    calibrator_rf.fit(y_pred_val_raw, y_val)
+
+    # Calibrar predicciones de test
+    y_pred_test_raw = best_rf.predict(X_test)
+    y_pred_test_calibrated = calibrator_rf.predict(y_pred_test_raw)
+
+    r2_original = r2_score(y_test, y_pred_test_raw)
+    r2_calibrado = r2_score(y_test, y_pred_test_calibrated)
+
+    print(f"\nR2 original: {r2_original:.4f}")
+    print(f"R2 calibrado: {r2_calibrado:.4f}")
+
+    # Decidir cuál usar
+    if r2_calibrado > r2_original:
+        print("\nUsando predicciones calibradas")
+        y_pred_test = y_pred_test_calibrated
+    else:
+        print("\nUsando predicciones originales")
+        y_pred_test = y_pred_test_raw
+
+    y_pred_val = calibrator_rf.predict(y_pred_val_raw) 
+                if r2_calibrado > r2_original else y_pred_val_raw
+
+    # Métricas de validación
+    mae_val = mean_absolute_error(y_val, y_pred_val) 
+    rmse_val = np.sqrt(mean_squared_error(y_val, y_pred_val)) 
+    r2_val = r2_score(y_val, y_pred_val)
+    da_val = directional_accuracy(y_val, y_pred_val)
+\end{lstlisting}
+
+\section{Código de escalado de datos para LSTM}
+\label{sec:codigo_escalado_lstm}
+\begin{lstlisting}[language=Python, caption=Implementación del escalado de datos para la X en LSTM, label=lst:scalado_datos]
+    scaler_X = MinMaxScaler(feature_range=(-1, 1)) 
+    X_tr_reshaped = X_tr.reshape(-1, X_tr.shape[-1]) 
+    X_vl_reshaped = X_vl.reshape(-1, X_vl.shape[-1]) 
+    X_ts_reshaped = X_ts.reshape(-1, X_ts.shape[-1]) 
+
+    scaler_X.fit(X_tr_reshaped) 
+
+    X_tr_scaled = scaler_X.transform(X_tr_reshaped).reshape(X_tr.shape) 
+    X_vl_scaled = scaler_X.transform(X_vl_reshaped).reshape(X_vl.shape) 
+    X_ts_scaled = scaler_X.transform(X_ts_reshaped).reshape(X_ts.shape) 
+\end{lstlisting}
+
+\section{Código de creación de secuencias para LSTM}
+\label{sec:codigo_creacion_secuencias_lstm}
+\begin{lstlisting}[language=Python, caption=Función para la creación de secuencias, label=lst:crear_secuencias]
+    def crear_secuencias(dataframe, input_length, output_length):
+        X, Y = [], []
+        values = dataframe.values 
+        
+        for i in range(len(values) - input_length - output_length): 
+            X.append(values[i:i+input_length, :])
+            Y.append(values[i+input_length:
+                            i+input_length+output_length, -1])
+        
+        X = np.array(X) 
+        Y = np.array(Y).reshape(-1, output_length, 1) 
+
+        return X, Y
+
+        #Llamada a la función
+        X_tr, Y_tr = crear_secuencias(tr, INPUT_LENGTH, OUTPUT_LENGTH) 
+        X_vl, Y_vl = crear_secuencias(vl, INPUT_LENGTH, OUTPUT_LENGTH) 
+        X_ts, Y_ts = crear_secuencias(ts, INPUT_LENGTH, OUTPUT_LENGTH) 
+\end{lstlisting}
+
+\section{Código de data augmentation para LSTM}
+\label{sec:codigo_data_augmentation_lstm}
+\begin{lstlisting}[language=Python, caption=Función para la data augmentation, label=lst:data_augmentation]
+    def augment_data(X, Y, noise_factor=0.0005):
+        X_aug = X + np.random.normal(0, noise_factor, X.shape)
+        Y_aug = Y + np.random.normal(0, noise_factor, Y.shape)
+        
+        X_combined = np.vstack([X, X_aug])
+        Y_combined = np.vstack([Y, Y_aug])
+        
+        return X_combined, Y_combined
+
+        # Aplicar data augmentation solo al conjunto de entrenamiento
+        X_tr_aug, Y_tr_aug = augment_data(X_tr_scaled, Y_tr_scaled)
+\end{lstlisting}
+
+\section{Código de entrenamiento del modelo LSTM}
+\label{sec:codigo_entrenamiento_lstm}
+\begin{lstlisting}[language=Python, caption=Compilación y entrenamiento del modelo LSTM, label=lst:model_training]
+    modelo.compile(
+    optimizer=Adam(learning_rate=LEARNING_RATE),
+    loss='mse',
+    metrics=['mae']
+    ) 
+
+    early_stop = EarlyStopping(
+        monitor='val_loss',
+        patience=50,
+        restore_best_weights=True,
+        verbose=1
+    )
+
+    reduce_lr = ReduceLROnPlateau(
+        monitor='val_loss',
+        factor=0.5,
+        patience=10,
+        min_lr=1e-6,
+        verbose=1
+    ) 
+
+    historia = modelo.fit(
+        X_tr_aug, Y_tr_aug, 
+        validation_data=(X_vl_scaled, Y_vl_scaled),
+        epochs=EPOCHS,
+        batch_size=BATCH_SIZE,
+        callbacks=[early_stop, reduce_lr],
+        verbose=1
+    ) 
+\end{lstlisting}
+
+\section{Código de análisis SHAP para Random Forest}
+\label{sec:codigo_shap}
+\begin{lstlisting}[language=Python, caption=Implementación de TreeExplainer en Randon Forest, label=lst:tree_explainer]
+    X_train_sample = X_train.sample(n=
+            min(100, len(X_train)), random_state=42)
+
+    explainer_rf = shap.TreeExplainer(best_rf)
+
+    shap_values_rf = explainer_rf.shap_values(X_test)
+\end{lstlisting}

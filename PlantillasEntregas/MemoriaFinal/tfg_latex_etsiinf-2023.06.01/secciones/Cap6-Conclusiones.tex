@@ -1,4 +1,67 @@
-\chapter{Conclusiones y trabajo futuro}
+\chapter{Conclusiones y análisis de impacto}
+En este capítulo se evalúa el grado de cumplimiento de los objetivos iniciales del trabajo y se analiza el impacto del proyecto en diferentes ámbitos, incluyendo su alineación con los Objetivos de Desarrollo Sostenible (ODS). Asimismo, se proponen líneas de trabajo futuro orientadas a superar las limitaciones identificadas y a ampliar el alcance del sistema desarrollado.
 
-Resumen de resultados obtenidos en el trabajo, conclusiones sobre los mismos y
-potencial trabajo futuro si existiera.
+\section{Cumplimiento de los objetivos del trabajo}
+A continuación, se evalúa el cumplimiento de los objetivos iniciales del trabajo propuestos en la propuesta inicial del TFG.
+
+\subsection{Objetivos cumplidos}
+\begin{itemize}
+    \item \emph{Analizar datos históricos de productos de inversión}. Se han analizado los datos históricos de \emp{Apple} desde enero de 2003 hasta diciembre de 2025, a partir de unos modelos predictivos con frecuencia mensual.
+    \item \emph{Definir el datastream multidimensional y documentar variables}. En el Capítulo 3 \ref{cap:EDA} se documentaron todas las variables (precio, inflación, tipos de interés, VIX ...) y se diseñó en python un pipeline de procesamiento completo y cuyo flujo se puede ver en la Figura \ref{fig:proceso_datos}.
+    \item \emph{Definición del problema: obtención y gestión de datos}. Se recopilaron datos de \emph{Yahoo Finance} y de la \emph{FED}, a su vez se definió una estructura de almacenamiento en CSV. Por otro lado, pese a encontrarse en los objetivos inicales el uso de una base de datos relacional, finalmente no sé implementó debido al reducido tamaño de la muestra (265 meses), optándose por un almacenamiento más sencillo y ágil en formato CSV.
+    \item \emph{Procesamiento y análisis de datos (EDA)}. En el Capítulo 3 \ref{cap:EDA} se realizó un análisis exploratorio completo (EDA) con \emph{R}, en dicho análisis, se incluyeron distribuciones, correlaciones, autocorrelaciones, PCA y clustering.
+    \item \emph{Ingeniería de características}. Se generaron variables derivadas como lags, medias móviles o volatilidades entre otras. Del mismo modo, se crearon dos datasets diferenciados, uno para Machine Learning con retardos y otro para Deep Learning sin retardos.
+    \item \emph{Desarrollo de modelos predictivos}. En el Capitulo 4 \ref{cap:EntrenamientoModelos}, se implementaron en Python los modelos de ML Random Forest y Gradient Boosting, a su vez, se implementó un modelo adicional, LightGBM, el cual daba mejores resultados que los anteriores. En lo que respecta a DL, se implementó el modelo LSTM, tal como se describe en el Capítulo 4 \ref{cap:EntrenamientoModelos}.
+    \item \emph{Predicción a diferentes intervalos de tiempo}. En el modelo LSTM, la arquitectura permite predecir secuencias de 6 meses (OUTPUT\_LENGTH=6), de las cuales se extrajeron las predicciones para horizontes de 1, 3 y 6 meses. Mientras tanto, en los modelos de ML, la predicción se realizó a un horizonte de 1 mes.
+    \item \emph{Evaluación experimental (backtesting)}. En el Capitulo 4 \ref{sec:resultadosMods}, se realizó en \emph{Python}, backtesting con ventana deslizante para todos los modelos, comparando su rendimiento y analizando su robustez temporal, permitiendo ver asi, que modelo es más eficiente en cada situación.
+    \item \emph{Visualización de resultados}. En los Capitulos 3 \ref{cap:EDA}, 4 \ref{cap:EntrenamientoModelos} y 5 \ref{cap:experimentos}, se generaron gráficas para visualizar los resultados obtenidos (Graficas de evolución de variables, graficas de predicción vs real, graficas de SHAP, tablas comparativas ...). Estas gráficas fueron generadas con la librería \texttt{matplotlib}. de \emph{Python}. Por lo tanto, no se utilizó \emph{Power BI} debido a que hacer un dashboard, era mucho más costoso y más dificil de visualizar que las graficas y tablas mostradas en la memoria.
+    \item \emph{Análisis de requisitos (herramientas)}. Se utilizaron \emph{Python}, \texttt{Pandas}, \texttt{NumPy}, \texttt{yfinance}, \texttt{matplotlib}, \texttt{Jupyter Notebook}, \texttt{Scikit-learn}, \texttt{TensorFlow}, \texttt{SHAP}, \texttt{LIME}, y la memoria se redactó en \emph{Overleaf}, con control de versiones en \emph{GitHub}.
+    \item \emph{Modelos predictivos generalizados y discriminativos}. Se implementaron Random Forest y Gradient Boosting (modelos generalizados) y LSTM (modelo discriminativo). Adicionalmente, se incorporó LightGBM por sus mejores resultados.
+\end{itemize}
+
+Se podría concluir que se han cumplido la mayoría de los objetivos planteados inicialmente, aunque algunos de ellos, como la implementación de una base de datos relacional o el uso de Power BI para visualización, fueron modificados durante el desarrollo del proyecto debido a consideraciones prácticas y al tamaño del dataset.
+
+\subsection{Líneas de trabajo futuro}
+A partir de las limitaciones identificadas y los resultados obtenidos, se proponen las siguientes líneas de trabajo futuro, ordenadas por prioridad:
+
+\begin{enumerate}
+    \item \emph{Aumento de la frecuencia de los datos}. La principal limitación de la LSTM fue el reducido tamaño del dataset (265 muestras). Como línea prioritaria, se propone utilizar datos diarios en lugar de mensuales, lo que proporcionaría miles de muestras y permitiría a la red recurrente explotar todo su potencial, mejorando previsiblemente su rendimiento.
+    \item \emph{Modelo híbrido LightGBM + LSTM}. Dado que LightGBM ha sido el modelo con mejor rendimiento predictivo (R² 0,2688, DA 77,78\%) y la LSTM aporta capacidad para capturar dependencias temporales, se propone desarrollar un modelo hibrido, ta que combine ambos modelos. Este híbrido podría aprovechar la precisión de LightGBM y la memoria temporal de la LSTM, superando seguramente a cada modelo por separado.
+    \item \emph{Incorporación del filtro de Kalman}. El filtro de Kalman \cite{Kalman} es una técnica de estimación recursiva que permite filtrar el ruido de las series temporales y estimar componentes latentes. Entonces, se propone integrarlo como paso de preprocesamiento para reducir el ruido de las variables macroeconómicas y del precio, o combinarlo con los modelos existentes (por ejemplo, mediante un enfoque híbrido Kalman-LSTM) para mejorar la robustez frente a cambios de régimen y eventos extremos.
+    \item \emph{Simulación de escenarios}. Como línea de trabajo futuro, se propone desarrollar un simulador de escenarios económicos que permita evaluar la respuesta de los modelos ante diferentes contextos macroeconómicos (recesión, crisis financiera ...). Este simulador modificaría todas las variables macroeconómicas a la vez y de forma coherente, generando asi escenarios realistas que podrían utilizarse para analizar la robustez de los modelos y su capacidad de generalización ante condiciones adversas del mercado.    
+    \item \emph{SHAP para LSTM}. Aunque SHAP no se aplicó a la LSTM en este trabajo por su complejidad, se plantea como línea futura su implementación mediante DeepExplainer \cite{DeepExplainer} o GradientExplainer \cite{GradientExplainer}, lo que permitiría descomponer las predicciones de la red recurrente y hacerla más transparente, mejorando su aplicabilidad en entornos financieros.
+    \item \emph{Generalización a múltiples activos}. Como se observó que los modelos no generalizan bien a otros activos, se propone desarrollar técnicas de transfer learning o incluir características invariantes al activo que permitan aplicar el mismo pipeline a cualquier activo sin necesidad de recalibración exhaustiva.
+    \item \emph{Optimización avanzada de hiperparámetros}. La búsqueda de hiperparámetros se realizó mediante GridSearch sobre un espacio limitado. Como línea futura, se propone utilizar búsqueda bayesiana \cite{BayesianOptimization}, que permite explorar espacios de búsqueda más amplios con el mismo coste computacional, encontrando potencialmente configuraciones mejores.
+\end{enumerate}
+
+\section{Evaluación del proceso de elaboración del TFG}
+La realización de este Trabajo de Fin de Grado ha supuesto una experiencia positiva y útil tanto a nivel académico como personal. Esto es debido a que a lo largo del desarrollo del proyecto, he tenido la oportunidad de aplicar de forma práctica los conocimientos adquiridos durante el grado, enfrentándome a retos reales de análisis de datos, modelado predictivo y evaluación de algoritmos de ML y DL.
+
+Del mismo modo, este trabajo me ha permitido familiarizarme y trabajar con herramientas y tecnologías que, peese a conocerlas, no había tenido la oportunidad de profundidad en ellas, una de estas herramientas es \emph{Python} y sus correspondients librerías (\texttt{Pandas}, \texttt{NumPy}, \texttt{Scikit-learn}, \texttt{TensorFlow} ...). Con \emph{Python}, he sido capaz de trabajar y tratar series temporales e implementar los modelos predictivos. Otra de las herramientas que me ha permitido aprender este trabajo, es \emph{R}, el cual me fue de gran utilidad para el EDA. Este proceso de aprendizaje ha sido clave para ampliar mis competencias técnicas y comprender las dificultades reales que conlleva la predicción de series financieras.
+
+En lo que respecta a la planificación temporal, todo ha transcurrido de acuerdo a lo planeado inicialmente y es que, pese a haber encontrado algunos baches y dificultades, he conseguido solventarlos y poder continuar con lo planificado, ciñiendome siempre a los objetivos establecidos para cada semana.
+
+Antes de finalizar, comentar que si bien no me ha sido posible completar el reto personal de conseguir un modelo generalizable a cualquier activo, el trabajo realizado constituye una base sólida y escalable sobre la que construir futuras mejoras. La estructura del pipeline de datos, la selección automática de variables y la implementación de los modelos, permiten visualizar con claridad el potencial del sistema para ser aplicado a otros activos o ampliado con nuevas funcionalidades.
+
+Para concluir, personalmente este proyecto me ha permitido profundizar en metodologías de desarrollo orientadas a la calidad y la eficiencia, reforzando mi compromiso con el diseño de soluciones útiles y sostenibles que respondan a necesidades reales. Además, me ha ayudado a confirmar mi interés por el análisis de datos y la OA, áreas en las que me gustaría seguir formándome y desarrollándome profesionalmente.
+
+\section{Análisis de impacto}
+En esta última sección, se analizará el impacto que tiene este TFG sobre diferentes ambitos, incluyendo el económico, tecnológico, social, personal y medioambiental. Además, se evaluará la alineación del trabajo con los Objetivos de Desarrollo Sostenible (ODS) \cite{ods} de la Agenda 2030.
+
+\subsection{Impacto económico}
+Desde un punto de vista económico, el hecho de poder predecir el rendimiento de activos financieros con una directional accuracy del 77,78\% en algunos modelos, supone una ventaja importante para inversores y gestores de carteras. Aunque los modelos desarrollados no garantizan el acierto total, ofrecen una ventaja estadística sobre un predictor ingenuo, lo que podría traducirse en mejores decisiones de inversión y una asignación más eficiente de los recursos. Además, al tratarse de herramientas de código abierto y gratuitas (Python, R), entonces la solución propuesta es de un coste bastante bajo, siendo asi accesible para accesible para pequeños inversores o instituciones con recursos limitados.
+
+\subsection{Impacto tecnológico}
+El trabajo demuestra que la combinación de variables macroeconómicas, técnicas de selección automática de variables y modelos de ML, permite obtener predicciones útiles en el ámbito financiero. A su vez, el pipeline desarrollado es escalable y transferible a otros activos, sentando las bases para futuras mejoras en el campo del análisis predictivo financiero. Del mismo modo, el uso de técnicas de interpretabilidad como \emph{SHAP} y \emph{LIME}, hace que sus predicciones sean comprensibles y y transparentes, lo que resulta muy importante en el ambito financieros.
+
+\subsection{Impacto social}
+El proyecto contribuye a la democratización del acceso a herramientas avanzadas de análisis financiero. Al estar basado en tecnologías de código abierto y documentarse de forma detallada el proceso, entonces cualquier persona con conocimientos básicos de programación podría repetir o adaptar el pipeline desarrollado. Además, el trabajo puede servir como material didáctico para estudiantes de finanzas, ingeniería financiera o inteligencia artificial, fomentando la formación en áreas de creciente demanda.
+
+\subsection{Alineación con los Objetivos de Desarrollo Sostenible (ODS)}
+Para concluir, teniendo en cuenta el impacto de este trabajo en las diferentes areas, por último se evaluará su alineación con los Objetivos de Desarrollo Sostenible (ODS) de la Agenda 2030. En este caso, el trabajo se alinea principalmente con los siguientes ODS:
+
+\begin{itemize}
+    \item \emph{ODS 4: Educación de calidad}. El trabajo puede ser utilizado como material didáctico en cursos de finanzas, IA y análisis de datos, fomentando la formación en áreas tecnológicas de alta demanda.
+    \item \emph{ODS 8: Trabajo decente y crecimiento económico}. La mejora en la capacidad de predicción de rendimientos financieros contribuye a una toma de decisiones más informada, lo que puede suponer un crecimiento económico más eficiente y estable.
+    \item \emph{ODS 9: Industria, innovación e infraestructura}. El proyecto aplica tecnologías avanzadas de ML y DL al sector financiero, fomentando la innovación y la modernización de una industria clave para la economía global.
+\end{itemize}
